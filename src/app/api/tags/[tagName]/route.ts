@@ -5,6 +5,7 @@ export async function GET(
     { params }: { params: { tagName: string } }
 ) {
     try {
+        const { tagName } = await params;
         // 这里替换为实际的数据获取逻辑
         const documents = [
             {

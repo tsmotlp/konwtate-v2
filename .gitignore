@@ -13,6 +13,8 @@
 # testing
 /coverage
 
+public/webviewer/
+
 # next.js
 /.next/
 /out/

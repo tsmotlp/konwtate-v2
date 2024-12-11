@@ -4,10 +4,11 @@ export async function GET(
     request: Request,
     { params }: { params: { paperId: string } }
 ) {
+    const { paperId } = await params;
     try {
         // 这里替换为实际的数据获取逻辑
         const paper = {
-            id: params.paperId,
+            id: paperId,
             title: "示例论文",
             abstract: "这是论文摘要...",
             tags: ["机器学习", "深度学习"],

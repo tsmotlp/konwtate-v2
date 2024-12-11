@@ -4,10 +4,12 @@ export async function GET(
     request: Request,
     { params }: { params: { noteId: string } }
 ) {
+    // 确保先等待 params
+    const { noteId } = await params;
     try {
         // 这里替换为实际的数据获取逻辑
         const note = {
-            id: params.noteId,
+            id: noteId,
             title: "示例笔记",
             content: "这是笔记的内容...",
             tags: ["标签1", "标签2"],
