@@ -1,0 +1,74 @@
+// schema.prisma
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Paper {
+  id          String   @id @default(uuid())
+  name        String
+  url         String
+  annotations String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 关系
+  tags        TagsOnPapers[]
+  notes       NotesOnPapers[]
+}
+
+model Note {
+  id          String   @id @default(uuid())
+  name        String
+  content     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 关系
+  tags        TagsOnNotes[]
+  papers      NotesOnPapers[]
+}
+
+model Tag {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 关系
+  papers      TagsOnPapers[]
+  notes       TagsOnNotes[]
+}
+
+// 多对多关系表
+model TagsOnPapers {
+  paper       Paper    @relation(fields: [paperId], references: [id])
+  paperId     String
+  tag         Tag      @relation(fields: [tagId], references: [id])
+  tagId       String
+
+  @@id([paperId, tagId])
+}
+
+model TagsOnNotes {
+  note        Note     @relation(fields: [noteId], references: [id])
+  noteId      String
+  tag         Tag      @relation(fields: [tagId], references: [id])
+  tagId       String
+
+  @@id([noteId, tagId])
+}
+
+model NotesOnPapers {
+  paper       Paper    @relation(fields: [paperId], references: [id])
+  paperId     String
+  note        Note     @relation(fields: [noteId], references: [id])
+  noteId      String
+
+  @@id([paperId, noteId])
+}

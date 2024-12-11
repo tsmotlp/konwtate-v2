@@ -74,8 +74,8 @@ export default function PaperPage() {
             <div className="flex-1 grid grid-cols-3 gap-6">
                 {/* PDF 查看器和注释区域 */}
                 <Card className="col-span-2 p-6 h-full">
-                    <PDFViewer 
-                        pdfUrl={"https://arxiv.org/pdf/1706.03762"} 
+                    <PDFViewer
+                        pdfUrl={"https://arxiv.org/pdf/1706.03762"}
                         onAnnotationChange={handleAnnotationChange}
                     />
                 </Card>
@@ -88,8 +88,8 @@ export default function PaperPage() {
                         <div className="space-y-2">
                             {paper.relatedNotes && paper.relatedNotes.length > 0 ? (
                                 paper.relatedNotes.map((note) => (
-                                    <div 
-                                        key={note.id} 
+                                    <div
+                                        key={note.id}
                                         className="p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
                                     >
                                         <h3 className="font-medium">{note.title}</h3>
@@ -110,16 +110,16 @@ export default function PaperPage() {
                         <div className="space-y-2">
                             {paper.relatedPapers && paper.relatedPapers.length > 0 ? (
                                 paper.relatedPapers.map((relatedPaper) => (
-                                    <div 
-                                        key={relatedPaper.id} 
+                                    <div
+                                        key={relatedPaper.id}
                                         className="p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
                                         onClick={() => router.push(`/papers/${relatedPaper.id}`)}
                                     >
                                         <h3 className="font-medium">{relatedPaper.title}</h3>
                                         <div className="flex flex-wrap gap-1 mt-1">
                                             {relatedPaper.tags.map(tag => (
-                                                <span 
-                                                    key={tag} 
+                                                <span
+                                                    key={tag}
                                                     className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded"
                                                 >
                                                     #{tag}
