@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { debounce } from 'lodash';
-import { Annotation } from '@/types/types'
+import { Annotation } from '@/types/annotation'
 
 export const useAnnotations = (paperId: string, initialAnnotations: Annotation[]) => {
     const [annotations, setAnnotations] = useState<Annotation[]>(initialAnnotations);
@@ -10,7 +10,7 @@ export const useAnnotations = (paperId: string, initialAnnotations: Annotation[]
     const updateAnnotationsToServer = useCallback(
         debounce(async (newAnnotations: Annotation[]) => {
             try {
-                await axios.patch(`/api/paper/${paperId}`, {
+                await axios.patch(`/api/papers/${paperId}`, {
                     annotations: JSON.stringify(newAnnotations)
                 });
             } catch (error) {

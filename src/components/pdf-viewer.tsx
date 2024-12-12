@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Bookmark, LayoutDashboard, PanelLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Paper } from '@prisma/client';
+import type { Paper } from '@prisma/client';
 import { Annotation, AnnotationType } from '@/types/annotation';
 import { useAnnotations } from '@/hooks/useAnnotations';
 import { useAnnotationStyles } from '@/hooks/useAnnotationStyles';
@@ -32,6 +32,7 @@ interface PDFViewerProps {
 }
 
 export const PDFViewer = ({ paper }: PDFViewerProps) => {
+  console.log("paper", paper);
   // 使用自定义 hooks
   const {
     annotations,
@@ -118,7 +119,7 @@ export const PDFViewer = ({ paper }: PDFViewerProps) => {
           translationResult={translationResult}
           setTranslationResult={setTranslationResult}
         />
-      ) : null
+      ) : <></>
     ),
     renderHighlights: (props: RenderHighlightsProps) => (
       <div>
@@ -219,7 +220,7 @@ export const PDFViewer = ({ paper }: PDFViewerProps) => {
 
   return (
     <ErrorBoundary>
-      <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+      <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
         <div className='flex flex-col h-full'>
           <div className='h-12 flex items-center justify-between border-b gap-x-20'>
             <Tooltip
@@ -257,7 +258,7 @@ export const PDFViewer = ({ paper }: PDFViewerProps) => {
             />
             {paper.url ? (
               <Viewer
-                fileUrl={"/1706.03762v7.pdf"}
+                fileUrl={paper.url}
                 defaultScale={SpecialZoomLevel.PageWidth}
                 plugins={[
                   bookmarkPluginInstance,
@@ -278,7 +279,16 @@ export const PDFViewer = ({ paper }: PDFViewerProps) => {
   );
 };
 
-// Sidebar 组件定义
+interface SidebarProps {
+  isOpened: boolean;
+  isThumbnailOpened: boolean;
+  isBookmarkOpened: boolean;
+  onThumbnailToggle: () => void;
+  onBookmarkToggle: () => void;
+  thumbnailComponent: React.ReactNode;
+  bookmarkComponent: React.ReactNode;
+}
+
 const Sidebar = ({
   isOpened,
   isThumbnailOpened,
@@ -287,7 +297,7 @@ const Sidebar = ({
   onBookmarkToggle,
   thumbnailComponent,
   bookmarkComponent
-}) => (
+}: SidebarProps) => (
   <div
     style={{
       overflow: 'auto',
@@ -325,5 +335,4 @@ const Sidebar = ({
     </div>
   </div>
 );
-
 export default PDFViewer;

@@ -1,28 +1,83 @@
 import { NextResponse } from 'next/server';
+import { getNote, updateNote, deleteNote } from '@/lib/db/note';
 
 export async function GET(
     request: Request,
     { params }: { params: { noteId: string } }
 ) {
-    // 确保先等待 params
-    const { noteId } = await params;
+    const { noteId } = params;  // 不需要 await params
+    
     try {
-        // 这里替换为实际的数据获取逻辑
-        const note = {
-            id: noteId,
-            title: "示例笔记",
-            content: "这是笔记的内容...",
-            tags: ["标签1", "标签2"],
-            lastModified: new Date().toISOString(),
-            references: [],
-            backlinks: []
-        };
+        const note = await getNote(noteId);
+        
+        if (!note) {
+            return NextResponse.json(
+                { error: "Note not found" },
+                { status: 404 }
+            );
+        }
 
         return NextResponse.json(note);
     } catch (error) {
+        console.error('Error fetching note:', error);
         return NextResponse.json(
             { error: "Failed to fetch note" },
             { status: 500 }
         );
     }
+}
+
+export async function PATCH(
+    request: Request,
+    { params }: { params: { noteId: string } }
+) {
+    const { noteId } = params;
+    
+    try {
+        const body = await request.json();
+        const {
+            name,
+            content,
+            addTagIds,
+            removeTagIds,
+            addPaperIds,
+            removePaperIds
+        } = body;
+
+        const updatedNote = await updateNote(noteId, {
+            name,
+            content,
+            addTagIds,
+            removeTagIds,
+            addPaperIds,
+            removePaperIds
+        });
+
+        return NextResponse.json(updatedNote);
+    } catch (error) {
+        console.error('Error updating note:', error);
+        return NextResponse.json(
+            { error: "Failed to update note" },
+            { status: 500 }
+        );
+    }
 } 
+
+
+export async function DELETE(
+    request: Request,
+    { params }: { params: { noteId: string } }
+) {
+    const { noteId } = params;
+    
+    try {
+        await deleteNote(noteId);
+        return new NextResponse(null, { status: 204 });
+    } catch (error) {
+        console.error('Error deleting note:', error);
+        return NextResponse.json(
+            { error: "Failed to delete note" },
+            { status: 500 }
+        );
+    }
+}

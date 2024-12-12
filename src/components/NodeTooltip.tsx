@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/card';
-import { Node, GraphData } from '@/app/types/graph';
+import { Node, GraphData } from '@/types/graph';
+import { getLinkTargetId } from '@/utils/graph';
 
 interface NodeTooltipProps {
   node: Node;
@@ -35,7 +36,7 @@ export const NodeTooltip = ({ node, position, graphData }: NodeTooltipProps) => 
           <div className="text-xs text-gray-500 dark:text-gray-400">
             <div className="mb-2">
               {graphData.links.filter(link => 
-                link.type === 'tag' && link.target.id === node.id
+                link.type === 'tag' && getLinkTargetId(link.target) === node.id
               ).length} 个相关文档
             </div>
             <div className="text-xs text-gray-600 dark:text-gray-300">
@@ -51,17 +52,20 @@ export const NodeTooltip = ({ node, position, graphData }: NodeTooltipProps) => 
             )}
 
             <div className="flex flex-wrap gap-1 mb-2">
-              {node.tags.map(tag => (
-                <span key={tag} className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">
-                  {tag}
-                </span>
-              ))}
+              {node.tags?.map(tagId => {
+                const tagNode = graphData.nodes.find(n => n.id === tagId && n.type === 'tag');
+                return tagNode ? (
+                  <span key={tagId} className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">
+                    #{tagNode.name}
+                  </span>
+                ) : null;
+              })}
             </div>
 
             <div className="text-xs text-gray-500 dark:text-gray-400 flex justify-between">
-              <span>引用: {node.references.length}</span>
-              <span>被引用: {node.backlinks.length}</span>
-              <span>{new Date(node.lastModified).toLocaleDateString()}</span>
+              <span>引用: {node.references?.length || 0}</span>
+              <span>被引用: {node.backlinks?.length || 0}</span>
+              <span>{new Date(node.updatedAt).toLocaleDateString()}</span>
             </div>
           </>
         )}

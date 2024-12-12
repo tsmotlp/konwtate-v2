@@ -230,3 +230,48 @@ export async function searchNotes(keyword: string) {
         }
     })
 } 
+
+
+// 获取与指定论文相关的笔记（基于共同标签）
+export async function getRelatedNotes(paperId: string) {
+    // 1. 首先获取论文的标签
+    const paper = await prisma.paper.findUnique({
+        where: { id: paperId },
+        include: {
+            tags: {
+                select: {
+                    tagId: true
+                }
+            }
+        }
+    });
+
+    if (!paper?.tags.length) {
+        return [];
+    }
+
+    const paperTagIds = paper.tags.map(t => t.tagId);
+
+    // 2. 查找具有相同标签的笔记
+    return await prisma.note.findMany({
+        where: {
+            tags: {
+                some: {
+                    tagId: {
+                        in: paperTagIds
+                    }
+                }
+            }
+        },
+        include: {
+            tags: {
+                include: {
+                    tag: true
+                }
+            }
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    });
+}

@@ -1,25 +1,59 @@
 import { NextResponse } from 'next/server';
+import { getPaper, updatePaper, deletePaper } from '@/lib/db/paper';
 
+// GET 路由
 export async function GET(
     request: Request,
     { params }: { params: { paperId: string } }
 ) {
-    const { paperId } = await params;
+    const paperId = params.paperId;
     try {
-        // 这里替换为实际的数据获取逻辑
-        const paper = {
-            id: paperId,
-            title: "示例论文",
-            abstract: "这是论文摘要...",
-            tags: ["机器学习", "深度学习"],
-            pdfUrl: "/sample.pdf", // 替换为实际的 PDF URL
-            lastModified: new Date().toISOString()
-        };
-
+        const paper = await getPaper(paperId);
+        if (!paper) {
+            return NextResponse.json(
+                { error: "Paper not found" },
+                { status: 404 }
+            );
+        }
         return NextResponse.json(paper);
     } catch (error) {
         return NextResponse.json(
             { error: "Failed to fetch paper" },
+            { status: 500 }
+        );
+    }
+}
+
+// PATCH 路由
+export async function PATCH(
+    request: Request,
+    { params }: { params: { paperId: string } }
+) {
+    try {
+        const paperId = params.paperId;
+        const body = await request.json();
+        const updatedPaper = await updatePaper(paperId, body);
+        return NextResponse.json(updatedPaper);
+    } catch (error) {
+        return NextResponse.json(
+            { error: "Failed to update paper" },
+            { status: 500 }
+        );
+    }
+}
+
+// DELETE 路由
+export async function DELETE(
+    request: Request,
+    { params }: { params: { paperId: string } }
+) {
+    try {
+        const paperId = params.paperId;
+        await deletePaper(paperId);
+        return NextResponse.json({ message: "Paper deleted successfully" });
+    } catch (error) {
+        return NextResponse.json(
+            { error: "Failed to delete paper" },
             { status: 500 }
         );
     }

@@ -1,39 +1,47 @@
 import Image from 'next/image';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Node } from '@/app/types/graph';
-import { useState } from 'react';
-import { SearchAndTagFilter } from './SearchAndTagFilter';
+import { Node } from '@/types/graph';
+import { useState, useEffect, useMemo } from 'react';
+import { SearchAndTagFilter } from '@/components/SearchAndTagFilter';
 
 interface SidebarProps {
-  recentItems: Array<{
+  items: Array<{
     id: string;
     title: string;
     type: 'paper' | 'note';
-    lastModified: string;
-    tags?: string[];
+    updatedAt: Date;
+    tags?: Array<{ id: string; name: string; }>;
   }>;
   onItemClick: (node: Node) => void;
   width: number;
   onAddTag?: (newTag: string) => void;
+  onDeleteTag?: (tag: string) => void;
 }
 
-export const Sidebar = ({ recentItems, onItemClick, width, onAddTag }: SidebarProps) => {
-  const [filteredItems, setFilteredItems] = useState<typeof recentItems>(recentItems);
+export const Sidebar = ({ items, onItemClick, width, onAddTag, onDeleteTag }: SidebarProps) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
 
-  const handleFilterChange = (searchTerm: string, selectedTag: string | null) => {
-    const filtered = recentItems.filter(item => {
+  const filteredItems = useMemo(() => {
+    if (!items) return [];
+    
+    return items.filter(item => {
       const matchesSearch = !searchTerm || 
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.tags && item.tags.some(tag => 
-          tag.toLowerCase().includes(searchTerm.toLowerCase())
+          tag.name.toLowerCase().includes(searchTerm.toLowerCase())
         ));
       
-      const matchesTag = !selectedTag || 
-        (item.tags && item.tags.includes(selectedTag));
+      const matchesTag = !selectedTagId || 
+        (item.tags && item.tags.some(tag => tag.id === selectedTagId));
 
       return matchesSearch && matchesTag;
     });
-    setFilteredItems(filtered);
+  }, [items, searchTerm, selectedTagId]);
+
+  const handleFilterChange = (newSearchTerm: string, newSelectedTagId: string | null) => {
+    setSearchTerm(newSearchTerm);
+    setSelectedTagId(newSelectedTagId);
   };
 
   return (
@@ -52,11 +60,16 @@ export const Sidebar = ({ recentItems, onItemClick, width, onAddTag }: SidebarPr
         <h1 className="font-bold text-xl truncate flex-1 min-w-0">Knowledge Graph</h1>
       </div>
 
-      <SearchAndTagFilter recentItems={recentItems} onFilterChange={handleFilterChange} onAddTag={onAddTag} />
+      <SearchAndTagFilter 
+        items={items} 
+        onFilterChange={handleFilterChange} 
+        onAddTag={onAddTag} 
+        onDeleteTag={onDeleteTag} 
+      />
 
       <div className="flex-1 overflow-hidden">
         {/* <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
-          {filteredItems.length > 0 ? '搜索结果' : '没有找到相关内容'}
+          {filteredItems.length > 0 ? '最近更新' : '无匹配结果'}
         </h2> */}
         <ScrollArea className="h-[calc(100vh-180px)]" key={filteredItems.length}>
           {filteredItems.length > 0 ? (
@@ -67,21 +80,42 @@ export const Sidebar = ({ recentItems, onItemClick, width, onAddTag }: SidebarPr
                 onClick={() => onItemClick({ id: item.id, type: item.type } as Node)}
               >
                 <div className="flex items-center gap-2 w-full min-w-0">
-                  <span className={`w-2 h-2 flex-shrink-0 rounded-full ${
-                    item.type === 'paper' ? 'bg-blue-500' : 'bg-emerald-500'
-                  }`} />
-                  <span className="text-sm truncate min-w-0 flex-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                  <span className="text-gray-500 dark:text-gray-400">
+                    {item.type === 'paper' ? '📄' : '📝'}
+                  </span>
+                  <span className={`text-sm truncate min-w-0 flex-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 ${
+                    item.type === 'paper' ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-600 dark:text-emerald-400'
+                  }`}>
                     {item.title}
                   </span>
                 </div>
-                <div className="text-xs text-gray-500 mt-1 pl-4">
-                  {new Date(item.lastModified).toLocaleDateString()}
+                {item.tags && item.tags.length > 0 && (
+                  <div className="flex gap-1.5 flex-wrap mt-1.5">
+                    {item.tags.slice(0, 3).map((tag) => (
+                      <span 
+                        key={tag.id} 
+                        className="text-xs px-2 py-0.5 bg-gray-50 dark:bg-gray-800/50 
+                          text-gray-600 dark:text-gray-300 rounded-lg border 
+                          border-gray-200 dark:border-gray-700"
+                      >
+                        #{tag.name}
+                      </span>
+                    ))}
+                    {item.tags.length > 3 && (
+                      <span className="text-xs text-gray-400 dark:text-gray-500">
+                        +{item.tags.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div className="text-xs text-gray-500 mt-1">
+                  {new Date(item.updatedAt).toLocaleDateString()}
                 </div>
               </div>
             ))
           ) : (
             <div className="text-gray-500 dark:text-gray-400 text-sm p-2">
-              没有找到相关内容
+              无匹配结果
             </div>
           )}
         </ScrollArea>
