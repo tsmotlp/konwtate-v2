@@ -7,7 +7,7 @@ import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon, BoldI
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { type Level } from "@tiptap/extension-heading"
 import { type ColorResult, CirclePicker, SketchPicker } from "react-color"
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DialogFooter, DialogHeader, DialogContent, DialogTitle, Dialog } from "@/components/ui/dialog";
@@ -436,20 +436,28 @@ const HeadingLevelButton = () => {
 const FontFamilyButton = () => {
     const { editor } = useEditorStore();
     const fonts = [
-        { label: "Arial", value: "Arial" },
-        { label: "Times New Roman", value: "Times New Roman" },
-        { label: "Georgia", value: "Georgia" },
-        { label: "Impact", value: "Impact" },
-        { label: "Comic Sans MS", value: "Comic Sans MS" },
-        { label: "Courier New", value: "Courier New" },
+        { label: "系统默认", value: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif" },
+        { label: "思源黑体", value: "'Source Han Sans SC', 'Noto Sans SC', sans-serif" },
+        { label: "思源宋体", value: "'Source Han Serif SC', 'Noto Serif SC', serif" },
+        { label: "微软雅黑", value: "'Microsoft YaHei', 'PingFang SC', sans-serif" },
+        { label: "苹方", value: "'PingFang SC', 'Microsoft YaHei', sans-serif" },
+        { label: "宋体", value: "'SimSun', serif" },
+        { label: "黑体", value: "'SimHei', sans-serif" },
+        { label: "楷体", value: "'KaiTi', serif" },
+        { label: "仿宋", value: "'FangSong', serif" },
+        // 英文字体
+        { label: "Arial", value: "Arial, sans-serif" },
+        { label: "Times New Roman", value: "'Times New Roman', serif" },
     ]
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button className="h-7 min-w-7 shrink-0 flex items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm">
+                <button className="h-7 w-[120px] shrink-0 flex items-center justify-between rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm">
                     <span className="truncate">
-                        {editor?.getAttributes("textStyle").fontFamily || "Arial"}
+                        {fonts.find(font =>
+                            editor?.getAttributes("textStyle").fontFamily === font.value
+                        )?.label || "系统默认"}
                     </span>
                     <ChevronDownIcon className="ml-2 size-4 shrink-0" />
                 </button>
@@ -467,7 +475,9 @@ const FontFamilyButton = () => {
                             editor?.chain().focus().setFontFamily(value).run()
                         }}
                     >
-                        <span className="text-sm">{label}</span>
+                        <span className="text-sm">
+                            {label}
+                        </span>
                     </button>
                 ))}
             </DropdownMenuContent>
@@ -481,7 +491,7 @@ interface ToolbarButtonProps {
     icon: LucideIcon;
 }
 
-const ToolbarButton = ({
+const ToolbarButton = memo(({
     onClick,
     isActive,
     icon: Icon,
@@ -490,14 +500,15 @@ const ToolbarButton = ({
         <button
             onClick={onClick}
             className={cn(
-                "text-sm h-7 min-w-7 flex items-center justify-center rounded-sm hover:bg-neutral-200/80",
+                "text-sm h-7 min-w-7 flex items-center justify-center rounded-sm",
+                "hover:bg-neutral-200/80 transition-colors duration-200",
                 isActive && "bg-neutral-200/80"
             )}
         >
             <Icon className="size-4" />
         </button>
-    )
-}
+    );
+});
 
 
 export const Toolbar = () => {
@@ -574,44 +585,54 @@ export const Toolbar = () => {
         ];
 
     return (
-        <div className="bg-[#F1F4F9] px-2.5 py-0.5 rounded-[24px] min-h-[40px] flex items-center justify-center gap-x-0.5 overflow-x-auto">
-            {sections[0].map((item) => (
-                <ToolbarButton
-                    key={item.label}
-                    onClick={item.onClick}
-                    icon={item.icon}
-                />
-            ))}
-            <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-            <FontFamilyButton />
-            <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-            <HeadingLevelButton />
-            <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-            <FontSizeButton />
-            <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-            {sections[1].map((item) => (
-                <ToolbarButton
-                    key={item.label}
-                    onClick={item.onClick}
-                    icon={item.icon}
-                />
-            ))}
+        <div className={cn(
+            "max-w-5xl mx-auto w-full",
+            "dark:bg-gray-800 dark:border-gray-700"
+        )}>
+            <div className={cn(
+                "bg-[#F1F4F9] dark:bg-gray-900",
+                "px-2.5 py-0.5 rounded-[24px]",
+                "min-h-[40px] flex items-center justify-start gap-x-0.5",
+                "overflow-x-auto custom-scrollbar"
+            )}>
+                {sections[0].map((item) => (
+                    <ToolbarButton
+                        key={item.label}
+                        onClick={item.onClick}
+                        icon={item.icon}
+                    />
+                ))}
+                <Separator orientation="vertical" className="h-6 bg-neutral-300" />
+                <FontFamilyButton />
+                <Separator orientation="vertical" className="h-6 bg-neutral-300" />
+                <HeadingLevelButton />
+                <Separator orientation="vertical" className="h-6 bg-neutral-300" />
+                <FontSizeButton />
+                <Separator orientation="vertical" className="h-6 bg-neutral-300" />
+                {sections[1].map((item) => (
+                    <ToolbarButton
+                        key={item.label}
+                        onClick={item.onClick}
+                        icon={item.icon}
+                    />
+                ))}
 
-            <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-            <TextColorButton />
-            <HighlightColorButton />
-            <LinkButton />
-            <ImageButton />
-            <AlignButton />
-            <LineHeightButton />
-            <ListButton />
-            {sections[2].map((item) => (
-                <ToolbarButton
-                    key={item.label}
-                    onClick={item.onClick}
-                    icon={item.icon}
-                />
-            ))}
+                <Separator orientation="vertical" className="h-6 bg-neutral-300" />
+                <TextColorButton />
+                <HighlightColorButton />
+                <LinkButton />
+                <ImageButton />
+                <AlignButton />
+                <LineHeightButton />
+                <ListButton />
+                {sections[2].map((item) => (
+                    <ToolbarButton
+                        key={item.label}
+                        onClick={item.onClick}
+                        icon={item.icon}
+                    />
+                ))}
+            </div>
         </div>
     )
 }

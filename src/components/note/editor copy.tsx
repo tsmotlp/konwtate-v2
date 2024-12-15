@@ -26,6 +26,10 @@ import { all, createLowlight } from 'lowlight'
 import { useEditorStore } from '@/hooks/use-editor-store'
 import { FontSizeExtension } from '@/extensions/font-size'
 import { LineHeightExtension } from '@/extensions/line-height'
+import { useCallback, useEffect } from 'react'
+import { debounce } from 'lodash'
+import { toast } from 'sonner'
+import { useParams } from 'next/navigation'
 
 // create a lowlight instance with all languages loaded
 const lowlight = createLowlight(all)
@@ -37,8 +41,46 @@ const lowlight = createLowlight(all)
 // lowlight.register('js', js)
 // lowlight.register('ts', ts)
 
-export const NoteEditor = () => {
+interface NoteEditorProps {
+    initialContent?: string;  // 添加初始内容属性
+    noteId?: string;         // 添加可选的 noteId
+    heightOffset?: string;   // 新增高度偏移量prop
+}
+
+export const NoteEditor = ({ initialContent, noteId: propNoteId, heightOffset = "8rem" }: NoteEditorProps) => {
+    const params = useParams()
     const { setEditor } = useEditorStore()
+
+    // 使用 prop 中的 noteId，如果没有则使用 URL 参数中的
+    const noteId = propNoteId || params.noteId
+
+    // 创建防抖的保存函数
+    const debouncedSave = useCallback(
+        debounce(async (content: string) => {
+            if (!noteId) return; // 如果没有 noteId，不执行保存
+
+            try {
+                const response = await fetch(`/api/notes/${noteId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ content }),
+                })
+
+                if (!response.ok) {
+                    throw new Error('保存失败')
+                }
+
+                toast.success('已保存')
+            } catch (error) {
+                console.error('保存笔记失败:', error)
+                toast.error('保存失败')
+            }
+        }, 1000),
+        [noteId]
+    )
+
     const editor = useEditor({
         onCreate({ editor }) {
             setEditor(editor)
@@ -48,6 +90,8 @@ export const NoteEditor = () => {
         },
         onUpdate({ editor }) {
             setEditor(editor)
+            const content = editor.getHTML()
+            debouncedSave(content)
         },
         onSelectionUpdate({ editor }) {
             setEditor(editor)
@@ -63,8 +107,8 @@ export const NoteEditor = () => {
         },
         editorProps: {
             attributes: {
-                style: 'padding-left:56px; padding-right:56px;',
-                class: 'focus:outline-none print:border-0 bg-white border border-[#C7C7C7] flex flex-col min-h-[1054px] w-[816px] pt-10 pr-14 pb-10 cursor-text'
+                class: 'prose prose-slate dark:prose-invert max-w-none focus:outline-none w-full bg-white dark:bg-gray-900 print:border-0',
+                style: 'padding: 2rem 3.5rem; min-height: 100%;',
             },
         },
         extensions: [
@@ -165,15 +209,45 @@ export const NoteEditor = () => {
 
             }),
         ],
-        content: `
-            
-        `,
+        content: initialContent || '', // 使用传入的初始内容
     })
 
+    // 在组件卸载时取消未执行的防抖保存
+    useEffect(() => {
+        return () => {
+            debouncedSave.cancel()
+        }
+    }, [debouncedSave])
+
+    // 只在没有 initialContent 时从服务器加载内容
+    useEffect(() => {
+        if (!initialContent && noteId && editor) {
+            const fetchNote = async () => {
+                try {
+                    const response = await fetch(`/api/notes/${noteId}`)
+                    const note = await response.json()
+
+                    if (note.content) {
+                        editor.commands.setContent(note.content)
+                    }
+                } catch (error) {
+                    console.error('获取笔记内容失败:', error)
+                    toast.error('加载笔记内容失败')
+                }
+            }
+            fetchNote()
+        }
+    }, [editor, noteId, initialContent])
+
     return (
-        <div className="size-full overflow-x-auto bg-[#F9FBFD] px-4 print:p-0 print:bg-white print:overflow-visible">
-            <div className="min-w-max flex justify-center w-[1200px] py-4 print:py-0 mx-auto print:w-full print:min-w-0">
-                <EditorContent editor={editor} />
+        <div className="relative flex flex-col h-full w-full">
+            <div className="flex-1 w-full overflow-y-auto overflow-x-hidden custom-scrollbar">
+                <div className="w-full max-w-[850px] mx-auto">
+                    <EditorContent
+                        editor={editor}
+                        className="min-h-full"
+                    />
+                </div>
             </div>
         </div>
     )

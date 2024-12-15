@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 html,
 body,
 :root {
@@ -40,6 +41,7 @@ body {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -72,6 +74,7 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -80,20 +83,19 @@ body {
 
 .tiptap {
   width: 100%;
-  height: 100%;
-  min-height: 100%;
-  > * {
+
+  >* {
     width: 100%;
   }
-  
+
   /* List styles */
-  ul, 
+  ul,
   ol {
     padding: 0 1rem;
     margin: 1.25rem 1rem 1.25rem 0.4rem;
   }
 
-  ul li{
+  ul li {
     list-style-type: disc;
 
     p {
@@ -102,9 +104,9 @@ body {
     }
   }
 
-  ol li{
+  ol li {
     list-style-type: decimal;
-    
+
     p {
       margin-top: 0.25em;
       margin-bottom: 0.25em;
@@ -121,13 +123,13 @@ body {
       align-items: flex-start;
       display: flex;
 
-      > label {
+      >label {
         flex: 0 0 auto;
         margin-right: 0.5rem;
         user-select: none;
       }
 
-      > div {
+      >div {
         flex: 1 1 auto;
       }
     }
@@ -143,39 +145,39 @@ body {
 
 
   /* Heading styles */
-  h1, 
-  h2, 
-  h3, 
-  h4, 
-  h5, 
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
   h6 {
     line-height: 1.1;
     margin-top: 2.5rem;
     text-wrap: pretty;
   }
 
-  h1, 
+  h1,
   h2 {
     margin-top: 3.5rem;
     margin-bottom: 1.5rem;
   }
 
-  h1 { 
-    font-size: 1.4rem; 
+  h1 {
+    font-size: 1.4rem;
   }
 
-  h2 { 
-    font-size: 1.2rem; 
+  h2 {
+    font-size: 1.2rem;
   }
 
-  h3 { 
-    font-size: 1.1rem; 
+  h3 {
+    font-size: 1.1rem;
   }
 
-  h4, 
-  h5, 
-  h6 { 
-    font-size: 1rem; 
+  h4,
+  h5,
+  h6 {
+    font-size: 1rem;
   }
 
 
@@ -196,7 +198,7 @@ body {
       position: relative;
       vertical-align: top;
 
-      > * {
+      >* {
         margin-bottom: 0;
       }
     }
@@ -210,7 +212,10 @@ body {
     .selectedCell:after {
       background: #959596;
       content: "";
-      left: 0; right: 0; top: 0; bottom: 0;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
       pointer-events: none;
       position: absolute;
       z-index: 2;
@@ -333,33 +338,115 @@ body {
   }
 
   /* Mathematics extension styles */
-  .Tiptap-mathematics-editor {
-    background: #202020;
-    color: #fff;
-    font-family: monospace;
-    padding: 0.2rem 0.5rem;
-  }
-
   .Tiptap-mathematics-render {
-    padding: 0 0.25rem;
-    display: block;
-    text-align: center;
-    margin: 1rem 0;
+    /* 基础样式 */
+    user-select: text;
+    cursor: text;
+    transition: background-color 0.2s ease;
 
+    /* 行内公式样式 */
+    &[data-type="inline"] {
+      display: inline-block;
+      padding: 0 0.2rem;
+      margin: 0;
+      min-height: 1em;
+      vertical-align: middle;
+
+      .katex {
+        font-size: 1em;
+      }
+    }
+
+    /* 块级公式样式 */
+    &[data-type="display"] {
+      display: block;
+      padding: 1rem;
+      margin: 1rem 0;
+      text-align: center;
+      min-height: 2em;
+
+      .katex {
+        font-size: 1.2em;
+      }
+
+      .katex-display {
+        margin: 0;
+        text-align: center;
+      }
+    }
+
+    /* 悬停效果 */
     &--editable {
-      cursor: pointer;
-      transition: background 0.2s;
+      position: relative;
 
       &:hover {
-        background: #eee;
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+
+      /* 编辑提示 */
+      &::after {
+        content: '点击编辑';
+        position: absolute;
+        top: -1.5em;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 0.2em 0.5em;
+        border-radius: 4px;
+        font-size: 0.8em;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        pointer-events: none;
+      }
+
+      &:hover::after {
+        opacity: 1;
       }
     }
   }
 
-  .Tiptap-mathematics-editor,
-  .Tiptap-mathematics-render {
-    border-radius: 0.25rem;
-    display: inline-block;
+  /* KaTeX 样式优化 */
+  .katex {
+    text-rendering: optimizeLegibility;
+    line-height: 1.2;
+  }
+
+  .katex-display {
+    overflow: auto hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.5em 0;
+  }
+
+  /* 暗色模式适配 */
+  .dark & {
+    .Tiptap-mathematics-render {
+      &--editable:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+    }
+
+    .Tiptap-mathematics-editor {
+      background: #2d2d2d;
+      border-color: #444;
+      color: #fff;
+    }
+  }
+
+  /* 编辑器样式 */
+  .Tiptap-mathematics-editor {
+    width: 100%;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    font-family: monospace;
+    font-size: 0.9em;
+
+    &[data-type="display"] {
+      margin: 1rem 0;
+    }
   }
 
   /* font-family */
@@ -376,4 +463,225 @@ body {
       @apply underline;
     }
   }
+
+  /* 添加以下样式 */
+  p {
+    margin: 1.25rem 0;
+    line-height: 1.75;
+  }
+
+  /* 优化代码块显示 */
+  pre {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    background: #1e1e1e;
+    overflow-x: auto;
+  }
+
+  /* 优化表格显示 */
+  .tableWrapper {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    background: white;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* 添加内容块间距，改善滚动体验 */
+  &>*+* {
+    margin-top: 1.5em;
+  }
+
+  /* 确保第一个元素没有顶部边距 */
+  &>*:first-child {
+    margin-top: 0;
+  }
+
+  /* 确保最后一个元素有足够的底部边距 */
+  &>*:last-child {
+    margin-bottom: 2rem;
+  }
+
+  /* 优化大型内容块的间距 */
+  &>h1,
+  &>h2 {
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+  }
+
+  &>h3,
+  &>h4,
+  &>h5,
+  &>h6 {
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  &>p {
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+    line-height: 1.75;
+  }
+
+  /* 列表间距优化 */
+  &>ul,
+  &>ol {
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+  }
+}
+
+/* 修改自定义滚动条样式 */
+.custom-scrollbar {
+  /* 平滑滚动 */
+  scroll-behavior: smooth;
+
+  /* 仅在内容超出时显示滚动条 */
+  overflow-y: overlay;
+
+  /* 滚动条样式 */
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background-color: transparent;
+  }
+
+  /* 滚动条轨道 */
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  /* 滚动条滑块 */
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(209, 213, 219, 0);
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+
+  /* 仅在悬停和滚动时显示滚动条 */
+  &:hover::-webkit-scrollbar-thumb,
+  &:active::-webkit-scrollbar-thumb {
+    background-color: rgba(209, 213, 219, 0.8);
+
+    &:hover {
+      background-color: rgba(156, 163, 175, 0.8);
+    }
+  }
+
+  /* 深色模式滚动条 */
+  @media (prefers-color-scheme: dark) {
+
+    &:hover::-webkit-scrollbar-thumb,
+    &:active::-webkit-scrollbar-thumb {
+      background-color: rgba(75, 85, 99, 0.8);
+
+      &:hover {
+        background-color: rgba(107, 114, 128, 0.8);
+      }
+    }
+  }
+
+  /* Firefox 滚动条样式 */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  &:hover {
+    scrollbar-color: rgba(209, 213, 219, 0.8) transparent;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &:hover {
+      scrollbar-color: rgba(75, 85, 99, 0.8) transparent;
+    }
+  }
+}
+
+/* 数学公式基础样式 */
+.math-node {
+  cursor: pointer;
+  min-width: 1em;
+  min-height: 1em;
+  padding: 0.2em;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-family: KaTeX_Main, 'Times New Roman', serif;
+  position: relative;
+}
+
+/* 行内和行间公式样式 */
+.math-node.math-inline {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.math-node.math-display {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+  padding: 0.5em;
+}
+
+/* 空节点提示 */
+.math-node:empty::before {
+  content: "双击编辑公式";
+  color: #999;
+  font-style: italic;
+}
+
+/* 错误状态 */
+.math-node.math-error {
+  color: #cc0000;
+  border-color: #cc0000;
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+/* 编辑器样式 */
+.math-editor {
+  width: 100%;
+  min-height: 2em;
+  padding: 0.5em;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: monospace;
+  background: white;
+  resize: vertical;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.math-editor.math-display {
+  min-height: 4em;
+}
+
+/* 选中状态 */
+.math-node.ProseMirror-selectednode {
+  outline: 2px solid #4dabf7;
+}
+
+/* KaTeX 样式优化 */
+.katex {
+  text-rendering: optimizeLegibility;
+  font-size: 1.1em;
+  line-height: 1.2;
+}
+
+.math-node.math-display .katex {
+  font-size: 1.2em;
+}
+
+.math-node.math-inline .katex {
+  font-size: 1em;
+}
+
+/* 暗色模式适配 */
+.dark .math-editor {
+  background: #1a1a1a;
+  border-color: #333;
+  color: #fff;
+}
+
+.dark .math-node.ProseMirror-selectednode {
+  outline-color: #228be6;
 }

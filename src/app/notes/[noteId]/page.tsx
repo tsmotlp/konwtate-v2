@@ -125,7 +125,11 @@ export default function NotePage() {
                     <div className="lg:col-span-2 flex flex-col gap-y-2 min-w-0 w-full">
                         <Toolbar />
                         <div className="flex-1 w-full">
-                            <NoteEditor />
+                            <NoteEditor
+                                initialContent={note.content || ''}
+                                noteId={note.id}
+                                containerHeight="calc(100vh - 136px)"
+                            />
                         </div>
                     </div>
 

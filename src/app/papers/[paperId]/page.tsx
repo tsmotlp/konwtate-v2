@@ -148,90 +148,98 @@ export default function PaperPage() {
 
                     {/* 右侧面板 - 根据是否选中note显示不同内容 */}
                     <div className="h-full overflow-y-auto pr-2 space-y-4">
-                        {/* 论文标签 */}
-                        <Card className="p-4">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-lg font-semibold whitespace-nowrap">标签</h2>
-                                <div className="w-[120px]">
-                                    <TagCreator
-                                        paperId={paper.id}
-                                        onTagCreated={() => {
-                                            // 添加加载状态
-                                            setLoading(true);
-                                            const fetchData = async () => {
-                                                try {
-                                                    const response = await fetch(`/api/papers/${paperId}`);
-                                                    if (!response.ok) {
-                                                        throw new Error("获取论文数据失败");
+                        {/* 论文标签 - 只在未选中笔记时显示 */}
+                        {!selectedNote && (
+                            <Card className="p-4">
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-lg font-semibold whitespace-nowrap">标签</h2>
+                                    <div className="w-[120px]">
+                                        <TagCreator
+                                            paperId={paper.id}
+                                            onTagCreated={() => {
+                                                // 添加加载状态
+                                                setLoading(true);
+                                                const fetchData = async () => {
+                                                    try {
+                                                        const response = await fetch(`/api/papers/${paperId}`);
+                                                        if (!response.ok) {
+                                                            throw new Error("获取论文数据失败");
+                                                        }
+                                                        const data = await response.json();
+                                                        setPaper(data);
+                                                        await debouncedFetchRelatedContent();
+                                                    } catch (error) {
+                                                        console.error('获取数据失败:', error);
+                                                        toast.error("更新论文数据失败");
+                                                    } finally {
+                                                        setLoading(false);
                                                     }
-                                                    const data = await response.json();
-                                                    setPaper(data);
-                                                    await debouncedFetchRelatedContent();
-                                                } catch (error) {
-                                                    console.error('获取数据失败:', error);
-                                                    toast.error("更新论文数据失败");
-                                                } finally {
-                                                    setLoading(false);
-                                                }
-                                            };
-                                            fetchData();
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex flex-wrap gap-2 mt-4">
-                                {paper.tags && paper.tags.length > 0 ? (
-                                    paper.tags.map(({ tag }) => (
-                                        <TagComponent
-                                            key={tag.id}
-                                            id={tag.id}
-                                            name={tag.name}
-                                            size="sm"
-                                            showActions={true}
-                                            onRemove={() => handleRemoveTag(tag.id)}
+                                                };
+                                                fetchData();
+                                            }}
                                         />
-                                    ))
-                                ) : (
-                                    <p className="text-gray-500 dark:text-gray-400 text-sm">暂无标签</p>
-                                )}
-                            </div>
-                        </Card>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap gap-2 mt-4">
+                                    {paper.tags && paper.tags.length > 0 ? (
+                                        paper.tags.map(({ tag }) => (
+                                            <TagComponent
+                                                key={tag.id}
+                                                id={tag.id}
+                                                name={tag.name}
+                                                size="sm"
+                                                showActions={true}
+                                                onRemove={() => handleRemoveTag(tag.id)}
+                                            />
+                                        ))
+                                    ) : (
+                                        <p className="text-gray-500 dark:text-gray-400 text-sm">暂无标签</p>
+                                    )}
+                                </div>
+                            </Card>
+                        )}
 
                         {selectedNote ? (
                             // 显示选中的note编辑器
-                            <div className="h-full flex flex-col">
-                                <div className="flex items-center justify-between mb-4">
-                                    {/* 左侧标题 */}
-                                    <h2 className="text-lg font-semibold truncate max-w-[200px]">{selectedNote.name}</h2>
+                            <Card className="h-full">
+                                <div className="h-full flex flex-col p-4">
+                                    <div className="h-16 flex items-center justify-between mb-4">
+                                        {/* 左侧标题 */}
+                                        <h2 className="text-lg font-semibold truncate max-w-[200px]">{selectedNote.name}</h2>
 
-                                    {/* 中间空白区域 */}
-                                    <div className="flex-1"></div>
+                                        {/* 中间空白区域 */}
+                                        <div className="flex-1"></div>
 
-                                    {/* 右侧按钮组 */}
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => setSelectedNote(null)}
-                                            className="px-3 py-1 text-sm rounded-md bg-gray-100 hover:bg-gray-200 
-                                                     dark:bg-gray-800 dark:hover:bg-gray-700"
-                                        >
-                                            返回相关内容
-                                        </button>
-                                        <button
-                                            onClick={() => router.push(`/notes/${selectedNote.id}`)}
-                                            className="px-3 py-1 text-sm rounded-md bg-blue-500 text-white 
-                                                     hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-                                        >
-                                            打开笔记页面
-                                        </button>
+                                        {/* 右侧按钮组 */}
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => setSelectedNote(null)}
+                                                className="px-3 py-1 text-sm rounded-md bg-gray-100 hover:bg-gray-200 
+                                                         dark:bg-gray-800 dark:hover:bg-gray-700"
+                                            >
+                                                返回相关内容
+                                            </button>
+                                            <button
+                                                onClick={() => router.push(`/notes/${selectedNote.id}`)}
+                                                className="px-3 py-1 text-sm rounded-md bg-blue-500 text-white 
+                                                         hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                                            >
+                                                打开笔记页面
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 flex flex-col">
+                                        <Toolbar />
+                                        <div className="flex-1 mt-4">
+                                            <NoteEditor
+                                                initialContent={selectedNote.content || ''}
+                                                noteId={selectedNote.id}
+                                                containerHeight="calc(100vh - 224px)"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="flex-1 flex flex-col">
-                                    <Toolbar />
-                                    <div className="flex-1 mt-4">
-                                        <NoteEditor />
-                                    </div>
-                                </div>
-                            </div>
+                            </Card>
                         ) : (
                             // 显示原来的相关内容
                             <>
