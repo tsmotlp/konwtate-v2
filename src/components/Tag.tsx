@@ -54,7 +54,7 @@ const TAG_COLORS = [
     }
 ];
 
-interface TagProps {
+interface TagComponentProps {
     id: string;
     name: string;
     onRemove?: (id: string) => void;
@@ -62,25 +62,23 @@ interface TagProps {
     onRename?: (id: string, newName: string) => void;
     onClick?: () => void;
     size?: 'sm' | 'md';
-    className?: string;
     showActions?: boolean;
     allowRename?: boolean;
     isActive?: boolean;
 }
 
-export const Tag = ({ 
-    id, 
-    name, 
-    onRemove, 
-    onDelete, 
+export const TagComponent = ({
+    id,
+    name,
+    onRemove,
+    onDelete,
     onRename,
     onClick,
-    size = 'md', 
-    className = '', 
+    size = 'md',
     showActions = true,
     allowRename = false,
     isActive = false
-}: TagProps) => {
+}: TagComponentProps) => {
     const [isHovered, setIsHovered] = useState(false);
     const [showRemoveDialog, setShowRemoveDialog] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -89,6 +87,8 @@ export const Tag = ({
 
     // 根据tag名称确定颜色（保证同名tag颜色相同）
     const colorIndex = useMemo(() => {
+        if (!name) return 0;
+
         let hash = 0;
         for (let i = 0; i < name.length; i++) {
             hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -139,8 +139,8 @@ export const Tag = ({
         <>
             <span
                 className={`inline-flex items-center gap-1.5 rounded-md border ${sizeClasses} 
-                    ${isActive 
-                        ? 'bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white border-transparent' 
+                    ${isActive
+                        ? 'bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white border-transparent'
                         : `${bg} ${text} ${border}`} 
                     transition-all duration-200 
                     ${onClick ? 'cursor-pointer' : ''}`}
@@ -148,7 +148,7 @@ export const Tag = ({
                 onMouseLeave={() => setIsHovered(false)}
                 onClick={onClick}
             >
-                #{name}
+                #{name || '未命名'}
                 {showActions && isHovered && (onRemove || onDelete || (allowRename && onRename)) && (
                     <div className="flex items-center gap-1 ml-0.5">
                         {allowRename && onRename && (
@@ -168,8 +168,8 @@ export const Tag = ({
                         {onDelete && (
                             <Trash2
                                 className={`h-3 w-3 cursor-pointer opacity-60 hover:opacity-100
-                                    ${isActive 
-                                        ? 'text-white hover:text-red-200' 
+                                    ${isActive
+                                        ? 'text-white hover:text-red-200'
                                         : 'hover:text-red-500 dark:hover:text-red-400'}`}
                                 onClick={handleDeleteClick}
                             />
@@ -208,7 +208,7 @@ export const Tag = ({
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>取消</AlertDialogCancel>
-                        <AlertDialogAction 
+                        <AlertDialogAction
                             onClick={handleConfirmDelete}
                             className="bg-red-600 hover:bg-red-700"
                         >

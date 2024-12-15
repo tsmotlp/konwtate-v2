@@ -1,86 +1,94 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import PDFViewer from '@/components/pdf-viewer';
-import { Paper } from '@prisma/client';
+import { Paper, Tag, Note } from '@prisma/client';
 import { NoteCreator } from '@/components/note-creator';
 import { Toolbar } from '@/components/note/toolbar';
 import { NoteEditor } from '@/components/note/editor';
-import { Tag } from '@/components/Tag';
+import { TagComponent } from '@/components/Tag';
 import { TagCreator } from '@/components/TagCreator';
 import { toast } from 'sonner';
+import { debounce } from 'lodash';
 
 export default function PaperPage() {
     const { paperId } = useParams();
     const [paper, setPaper] = useState<Paper & {
-        tags: { tag: { id: string; name: string } }[];
-        notes: { note: { id: string; name: string; content: string } }[];
+        tags: {
+            tag: Tag;
+        }[];
+        notes: {
+            note: Note;
+        }[];
     } | null>(null);
     const [relatedPapers, setRelatedPapers] = useState<(Paper & {
-        tags: { tag: { id: string; name: string } }[];
+        tags: {
+            tag: Tag;
+        }[];
     })[]>([]);
-    const [relatedNotes, setRelatedNotes] = useState<{
-        id: string;
-        name: string;
-        content: string;
-        tags: { tag: { id: string; name: string } }[];
-    }[]>([]);
+    const [relatedNotes, setRelatedNotes] = useState<(Note & {
+        tags: {
+            tag: Tag;
+        }[];
+    })[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const [selectedNote, setSelectedNote] = useState<{
-        id: string;
-        name: string;
-        content: string;
-    } | null>(null);
+    const [selectedNote, setSelectedNote] = useState<(Note & {
+        tags: {
+            tag: Tag;
+        }[];
+    }) | null>(null);
 
-    const fetchRelatedContent = useCallback(async () => {
+    const debouncedFetchRelatedContent = useCallback(
+        debounce(async () => {
+            try {
+                const response = await fetch(`/api/papers/${paperId}/related`);
+                const data = await response.json();
+                setRelatedPapers(data.relatedPapers);
+                setRelatedNotes(data.relatedNotes);
+            } catch (error) {
+                console.error('获取相关内容失败:', error);
+                toast.error('获取相关内容失败');
+            }
+        }, 300),
+        [paperId]
+    );
+
+    const fetchData = async () => {
+        setLoading(true);
         try {
-            const response = await fetch(`/api/papers/${paperId}/related`);
+            const response = await fetch(`/api/papers/${paperId}`);
             const data = await response.json();
-            setRelatedPapers(data.relatedPapers);
-            setRelatedNotes(data.relatedNotes);
+            setPaper(data);
+            await debouncedFetchRelatedContent();
         } catch (error) {
-            console.error('获取相关内容失败:', error);
+            console.error('获取数据失败:', error);
+        } finally {
+            setLoading(false);
         }
-    }, [paperId]);
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const response = await fetch(`/api/papers/${paperId}`);
-                const data = await response.json();
-                setPaper(data);
-                await fetchRelatedContent();
-            } catch (error) {
-                console.error('获取数据失败:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchData();
-    }, [paperId, fetchRelatedContent]);
+    }, [paperId, debouncedFetchRelatedContent]);
 
-    const handleNoteClick = (note: {
-        id: string;
-        name: string;
-        content: string;
+    const handleNoteClick = (note: Note & {
+        tags: {
+            tag: Tag;
+        }[];
     }) => {
         setSelectedNote(note);
     };
 
     const handleRemoveTag = async (tagId: string) => {
         try {
-            // 获取当前 paper 的所有 tag IDs，除了要移除的那个
             const currentTagIds = paper?.tags
-                .map(({ tag }) => tag.id)
+                ?.map(({ tag }) => tag.id)
                 .filter(id => id !== tagId) || [];
 
-            // 调用 API 更新 paper 的 tags
             const response = await fetch(`/api/papers/${paperId}`, {
                 method: 'PATCH',
                 headers: {
@@ -97,19 +105,17 @@ export default function PaperPage() {
                 throw new Error(data.error);
             }
 
-            // 更新本地 state
             setPaper(prevPaper => {
                 if (!prevPaper) return null;
                 return {
                     ...prevPaper,
-                    tags: prevPaper.tags.filter(({ tag }) => tag.id !== tagId)
+                    tags: prevPaper.tags?.filter(({ tag }) => tag.id !== tagId) || []
                 };
             });
 
             toast.success('标签移除成功');
-            
-            // 重新获取相关内容
-            await fetchRelatedContent();
+            await fetchData();
+            await debouncedFetchRelatedContent();
         } catch (error) {
             console.error('Error removing tag:', error);
             toast.error(error instanceof Error ? error.message : '移除标签失败');
@@ -160,7 +166,7 @@ export default function PaperPage() {
                                                     }
                                                     const data = await response.json();
                                                     setPaper(data);
-                                                    await fetchRelatedContent();
+                                                    await debouncedFetchRelatedContent();
                                                 } catch (error) {
                                                     console.error('获取数据失败:', error);
                                                     toast.error("更新论文数据失败");
@@ -174,9 +180,9 @@ export default function PaperPage() {
                                 </div>
                             </div>
                             <div className="flex flex-wrap gap-2 mt-4">
-                                {paper.tags?.length > 0 ? (
+                                {paper.tags && paper.tags.length > 0 ? (
                                     paper.tags.map(({ tag }) => (
-                                        <Tag
+                                        <TagComponent
                                             key={tag.id}
                                             id={tag.id}
                                             name={tag.name}
@@ -241,11 +247,11 @@ export default function PaperPage() {
                                                     name: tag.name
                                                 })) || []}
                                                 redirectToNote={false}
-                                                onNoteCreated={fetchRelatedContent}
+                                                onNoteCreated={debouncedFetchRelatedContent}
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            {relatedNotes.length > 0 ? (
+                                            {relatedNotes && relatedNotes.length > 0 ? (
                                                 relatedNotes.map((note) => (
                                                     <div
                                                         key={note.id}
@@ -264,7 +270,7 @@ export default function PaperPage() {
                                                         {note.tags && note.tags.length > 0 && (
                                                             <div className="flex gap-1.5 flex-wrap mt-1.5">
                                                                 {note.tags.slice(0, 3).map(({ tag }) => (
-                                                                    <Tag
+                                                                    <TagComponent
                                                                         key={tag.id}
                                                                         id={tag.id}
                                                                         name={tag.name}
@@ -283,7 +289,7 @@ export default function PaperPage() {
                                                 ))
                                             ) : (
                                                 <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                                                    {paper.tags?.length > 0 ? '暂无相关笔记' : '添加标签以查看相关笔记'}
+                                                    {paper.tags && paper.tags?.length > 0 ? '暂无相关笔记' : '添加标签以查看相关笔记'}
                                                 </p>
                                             )}
                                         </div>
@@ -311,7 +317,7 @@ export default function PaperPage() {
                                                         {relatedPaper.tags && relatedPaper.tags.length > 0 && (
                                                             <div className="flex gap-1.5 flex-wrap mt-1.5">
                                                                 {relatedPaper.tags.slice(0, 3).map(({ tag }) => (
-                                                                    <Tag
+                                                                    <TagComponent
                                                                         key={tag.id}
                                                                         id={tag.id}
                                                                         name={tag.name}
@@ -330,7 +336,7 @@ export default function PaperPage() {
                                                 ))
                                             ) : (
                                                 <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                                                    {paper.tags?.length > 0 ? '暂无相关论文' : '添加标签以查看相关论文'}
+                                                    {paper.tags && paper.tags?.length > 0 ? '暂无相关论文' : '添加标签以查看相关论文'}
                                                 </p>
                                             )}
                                         </div>

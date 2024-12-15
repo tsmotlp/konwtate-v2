@@ -3,7 +3,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Node } from '@/types/graph';
 import { useState, useEffect, useMemo } from 'react';
 import { SearchAndTagFilter } from '@/components/SearchAndTagFilter';
-import { Tag } from '@/components/Tag';
+import { ContentListItem } from '@/components/ContentListItem';
+import { Tag } from '@prisma/client';
 
 interface SidebarProps {
   items: Array<{
@@ -11,7 +12,7 @@ interface SidebarProps {
     title: string;
     type: 'paper' | 'note';
     updatedAt: Date;
-    tags?: Array<{ id: string; name: string; }>;
+    tags?: Tag[];
   }>;
   onItemClick: (node: Node) => void;
   width: number;
@@ -71,42 +72,14 @@ export const Sidebar = ({ items, onItemClick, width }: SidebarProps) => {
         <ScrollArea className="h-[calc(100vh-180px)]" key={filteredItems.length}>
           {filteredItems.length > 0 ? (
             filteredItems.map((item) => (
-              <div
+              <ContentListItem
                 key={item.id}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg mb-2 cursor-pointer group"
+                id={item.id}
+                type={item.type}
+                title={item.title}
+                tags={item.tags}
                 onClick={() => onItemClick({ id: item.id, type: item.type } as Node)}
-              >
-                <div className="flex items-center gap-2 w-full min-w-0">
-                  <span className="text-gray-500 dark:text-gray-400">
-                    {item.type === 'paper' ? '📄' : '📝'}
-                  </span>
-                  <span className={`text-sm truncate min-w-0 flex-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 ${item.type === 'paper' ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-600 dark:text-emerald-400'
-                    }`}>
-                    {item.title}
-                  </span>
-                </div>
-                {item.tags && item.tags.length > 0 && (
-                  <div className="flex gap-1.5 flex-wrap mt-1.5">
-                    {item.tags.slice(0, 3).map((tag) => (
-                      <Tag
-                        key={tag.id}
-                        id={tag.id}
-                        name={tag.name}
-                        size="sm"
-                        showDelete={false}
-                      />
-                    ))}
-                    {item.tags.length > 3 && (
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
-                        +{item.tags.length - 3}
-                      </span>
-                    )}
-                  </div>
-                )}
-                <div className="text-xs text-gray-500 mt-1">
-                  {new Date(item.updatedAt).toLocaleDateString()}
-                </div>
-              </div>
+              />
             ))
           ) : (
             <div className="text-gray-500 dark:text-gray-400 text-sm p-2">

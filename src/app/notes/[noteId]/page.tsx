@@ -5,23 +5,29 @@ import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { NoteEditor } from '@/components/note/editor';
 import { Toolbar } from '@/components/note/toolbar';
-import { Tag } from '@/components/Tag';
+import { TagComponent } from '@/components/Tag';
 import { TagCreator } from '@/components/TagCreator';
 import { toast } from 'sonner';
+import { Paper, Tag, Note } from '@prisma/client';
 
-interface Note {
-    id: string;
-    name: string;
-    content: string;
-    tags: { tag: { id: string; name: string } }[];
-    updatedAt: string;
-}
 
 export default function NotePage() {
     const { noteId } = useParams();
-    const [note, setNote] = useState<Note | null>(null);
-    const [relatedPapers, setRelatedPapers] = useState<any[]>([]);
-    const [relatedNotes, setRelatedNotes] = useState<any[]>([]);
+    const [note, setNote] = useState<Note & {
+        tags: {
+            tag: Tag;
+        }[];
+    } | null>(null);
+    const [relatedPapers, setRelatedPapers] = useState<(Paper & {
+        tags: {
+            tag: Tag;
+        }[];
+    })[]>([]);
+    const [relatedNotes, setRelatedNotes] = useState<(Note & {
+        tags: {
+            tag: Tag;
+        }[];
+    })[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
@@ -36,32 +42,30 @@ export default function NotePage() {
         }
     }, [noteId]);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const response = await fetch(`/api/notes/${noteId}`);
-                const data = await response.json();
-                setNote(data);
-                await fetchRelatedContent();
-            } catch (error) {
-                console.error('获取笔记失败:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/notes/${noteId}`);
+            const data = await response.json();
+            setNote(data);
+            await fetchRelatedContent();
+        } catch (error) {
+            console.error('获取笔记失败:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchData();
     }, [noteId, fetchRelatedContent]);
 
     const handleRemoveTag = async (tagId: string) => {
         try {
-            // 获取当前 note 的所有 tag IDs，除了要移除的那个
             const currentTagIds = note?.tags
                 .map(({ tag }) => tag.id)
                 .filter(id => id !== tagId) || [];
 
-            // 调用 API 更新 note 的 tags
             const response = await fetch(`/api/notes/${noteId}`, {
                 method: 'PATCH',
                 headers: {
@@ -78,7 +82,6 @@ export default function NotePage() {
                 throw new Error(data.error);
             }
 
-            // 更新本地 state
             setNote(prevNote => {
                 if (!prevNote) return null;
                 return {
@@ -88,8 +91,7 @@ export default function NotePage() {
             });
 
             toast.success('标签移除成功');
-            
-            // 重新获取相关内容
+            await fetchData();
             await fetchRelatedContent();
         } catch (error) {
             console.error('Error removing tag:', error);
@@ -163,7 +165,7 @@ export default function NotePage() {
                             <div className="flex flex-wrap gap-2 mt-4">
                                 {note.tags?.length > 0 ? (
                                     note.tags.map(({ tag }) => (
-                                        <Tag
+                                        <TagComponent
                                             key={tag.id}
                                             id={tag.id}
                                             name={tag.name}
@@ -197,8 +199,8 @@ export default function NotePage() {
                                             </div>
                                             {paper.tags && paper.tags.length > 0 && (
                                                 <div className="flex gap-1.5 flex-wrap mt-1.5">
-                                                    {paper.tags.slice(0, 3).map(({ tag }: { tag: { id: string; name: string } }) => (
-                                                        <Tag
+                                                    {paper.tags.slice(0, 3).map(({ tag }) => (
+                                                        <TagComponent
                                                             key={tag.id}
                                                             id={tag.id}
                                                             name={tag.name}
@@ -245,8 +247,8 @@ export default function NotePage() {
                                             </p>
                                             {relatedNote.tags && relatedNote.tags.length > 0 && (
                                                 <div className="flex gap-1.5 flex-wrap mt-1.5">
-                                                    {relatedNote.tags.slice(0, 3).map(({ tag }: { tag: { id: string; name: string } }) => (
-                                                        <Tag
+                                                    {relatedNote.tags.slice(0, 3).map(({ tag }) => (
+                                                        <TagComponent
                                                             key={tag.id}
                                                             id={tag.id}
                                                             name={tag.name}

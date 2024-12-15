@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
-import { Tag } from '@/components/Tag';
+import { TagComponent } from '@/components/Tag';
 import { toast } from 'sonner';
 
 interface SearchAndTagFilterProps {
@@ -12,10 +12,9 @@ interface SearchAndTagFilterProps {
     tags?: Array<{ id: string; name: string; }>;
   }>;
   onFilterChange: (searchTerm: string, selectedTag: string | null) => void;
-  onTagsUpdate: (tags: Array<{ id: string; name: string; }>) => void;
 }
 
-export const SearchAndTagFilter: React.FC<SearchAndTagFilterProps> = ({ items, onFilterChange, onTagsUpdate }) => {
+export const SearchAndTagFilter: React.FC<SearchAndTagFilterProps> = ({ items, onFilterChange }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const [isTagsExpanded, setIsTagsExpanded] = useState(false);
@@ -123,7 +122,7 @@ export const SearchAndTagFilter: React.FC<SearchAndTagFilterProps> = ({ items, o
         </div>
         <div className="flex flex-wrap gap-1.5">
           {displayedTags.map(tag => (
-            <Tag
+            <TagComponent
               key={tag.id}
               id={tag.id}
               name={tag.name}
