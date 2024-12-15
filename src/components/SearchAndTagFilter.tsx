@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Tag } from '@/components/Tag';
+import { toast } from 'sonner';
 
 interface SearchAndTagFilterProps {
   items: Array<{
@@ -11,9 +12,10 @@ interface SearchAndTagFilterProps {
     tags?: Array<{ id: string; name: string; }>;
   }>;
   onFilterChange: (searchTerm: string, selectedTag: string | null) => void;
+  onTagsUpdate: (tags: Array<{ id: string; name: string; }>) => void;
 }
 
-export const SearchAndTagFilter: React.FC<SearchAndTagFilterProps> = ({ items, onFilterChange }) => {
+export const SearchAndTagFilter: React.FC<SearchAndTagFilterProps> = ({ items, onFilterChange, onTagsUpdate }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const [isTagsExpanded, setIsTagsExpanded] = useState(false);
@@ -39,6 +41,55 @@ export const SearchAndTagFilter: React.FC<SearchAndTagFilterProps> = ({ items, o
     setSelectedTagId(newSelectedTagId);
     setSearchTerm('');
     onFilterChange('', newSelectedTagId);
+  };
+
+  const handleRenameTag = async (tagId: string, newName: string) => {
+    try {
+      const response = await fetch(`/api/tags/${tagId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: newName }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || '重命名标签失败');
+      }
+
+      toast.success('标签重命名成功');
+      // 这里可能需要刷新页面或更新父组件的状态
+      window.location.reload();
+    } catch (error) {
+      console.error('Error renaming tag:', error);
+      toast.error(error instanceof Error ? error.message : '重命名标签失败');
+    }
+  };
+
+  const handleDeleteTag = async (tagId: string) => {
+    try {
+      const response = await fetch(`/api/tags/${tagId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || '删除标签失败');
+      }
+
+      toast.success('标签删除成功');
+      // 如果被删除的标签是当前选中的标签，清除选择
+      if (tagId === selectedTagId) {
+        setSelectedTagId(null);
+        onFilterChange(searchTerm, null);
+      }
+      // 这里可能需要刷新页面或更新父组件的状态
+      window.location.reload();
+    } catch (error) {
+      console.error('Error deleting tag:', error);
+      toast.error(error instanceof Error ? error.message : '删除标签失败');
+    }
   };
 
   return (
@@ -72,21 +123,18 @@ export const SearchAndTagFilter: React.FC<SearchAndTagFilterProps> = ({ items, o
         </div>
         <div className="flex flex-wrap gap-1.5">
           {displayedTags.map(tag => (
-            <Button
+            <Tag
               key={tag.id}
-              onClick={() => handleTagClick(tag.id)}
-              variant={tag.id === selectedTagId ? "default" : "secondary"}
+              id={tag.id}
+              name={tag.name}
               size="sm"
-              className="h-7 gap-1 group"
-            >
-              <Tag
-                id={tag.id}
-                name={tag.name}
-                size="sm"
-                showDelete={false}
-                className={tag.id === selectedTagId ? "!bg-transparent !border-transparent" : ""}
-              />
-            </Button>
+              showActions={true}
+              onDelete={handleDeleteTag}
+              onRename={handleRenameTag}
+              allowRename={true}
+              isActive={tag.id === selectedTagId}
+              onClick={() => handleTagClick(tag.id)}
+            />
           ))}
           {allTags.length > 5 && (
             <Button

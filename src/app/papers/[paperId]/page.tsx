@@ -73,10 +73,22 @@ export default function PaperPage() {
         setSelectedNote(note);
     };
 
-    const handleDeleteTag = async (tagId: string) => {
+    const handleRemoveTag = async (tagId: string) => {
         try {
-            const response = await fetch(`/api/tags/${tagId}`, {
-                method: 'DELETE',
+            // 获取当前 paper 的所有 tag IDs，除了要移除的那个
+            const currentTagIds = paper?.tags
+                .map(({ tag }) => tag.id)
+                .filter(id => id !== tagId) || [];
+
+            // 调用 API 更新 paper 的 tags
+            const response = await fetch(`/api/papers/${paperId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    tagIds: currentTagIds
+                }),
             });
 
             const data = await response.json();
@@ -85,10 +97,22 @@ export default function PaperPage() {
                 throw new Error(data.error);
             }
 
-            toast.success(data.message || '标签删除成功');
+            // 更新本地 state
+            setPaper(prevPaper => {
+                if (!prevPaper) return null;
+                return {
+                    ...prevPaper,
+                    tags: prevPaper.tags.filter(({ tag }) => tag.id !== tagId)
+                };
+            });
+
+            toast.success('标签移除成功');
+            
+            // 重新获取相关内容
+            await fetchRelatedContent();
         } catch (error) {
-            console.error('Error deleting tag:', error);
-            toast.error(error instanceof Error ? error.message : '删除标签失败');
+            console.error('Error removing tag:', error);
+            toast.error(error instanceof Error ? error.message : '移除标签失败');
         }
     };
 
@@ -156,7 +180,9 @@ export default function PaperPage() {
                                             key={tag.id}
                                             id={tag.id}
                                             name={tag.name}
-                                            onDelete={() => handleDeleteTag(tag.id)}
+                                            size="sm"
+                                            showActions={true}
+                                            onRemove={() => handleRemoveTag(tag.id)}
                                         />
                                     ))
                                 ) : (
@@ -243,6 +269,7 @@ export default function PaperPage() {
                                                                         id={tag.id}
                                                                         name={tag.name}
                                                                         size="sm"
+                                                                        showActions={false}
                                                                     />
                                                                 ))}
                                                                 {note.tags.length > 3 && (
@@ -289,6 +316,7 @@ export default function PaperPage() {
                                                                         id={tag.id}
                                                                         name={tag.name}
                                                                         size="sm"
+                                                                        showActions={false}
                                                                     />
                                                                 ))}
                                                                 {relatedPaper.tags.length > 3 && (

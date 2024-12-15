@@ -54,10 +54,22 @@ export default function NotePage() {
         fetchData();
     }, [noteId, fetchRelatedContent]);
 
-    const handleDeleteTag = async (tagId: string) => {
+    const handleRemoveTag = async (tagId: string) => {
         try {
-            const response = await fetch(`/api/tags/${tagId}`, {
-                method: 'DELETE',
+            // 获取当前 note 的所有 tag IDs，除了要移除的那个
+            const currentTagIds = note?.tags
+                .map(({ tag }) => tag.id)
+                .filter(id => id !== tagId) || [];
+
+            // 调用 API 更新 note 的 tags
+            const response = await fetch(`/api/notes/${noteId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    tagIds: currentTagIds
+                }),
             });
 
             const data = await response.json();
@@ -66,10 +78,22 @@ export default function NotePage() {
                 throw new Error(data.error);
             }
 
-            toast.success(data.message || '标签删除成功');
+            // 更新本地 state
+            setNote(prevNote => {
+                if (!prevNote) return null;
+                return {
+                    ...prevNote,
+                    tags: prevNote.tags.filter(({ tag }) => tag.id !== tagId)
+                };
+            });
+
+            toast.success('标签移除成功');
+            
+            // 重新获取相关内容
+            await fetchRelatedContent();
         } catch (error) {
-            console.error('Error deleting tag:', error);
-            toast.error(error instanceof Error ? error.message : '删除标签失败');
+            console.error('Error removing tag:', error);
+            toast.error(error instanceof Error ? error.message : '移除标签失败');
         }
     };
 
@@ -113,15 +137,22 @@ export default function NotePage() {
                                     <TagCreator
                                         noteId={note.id}
                                         onTagCreated={() => {
-                                            // 重新获取笔记数据以更新标签
+                                            // 添加加载状态
+                                            setLoading(true);
                                             const fetchData = async () => {
                                                 try {
                                                     const response = await fetch(`/api/notes/${noteId}`);
+                                                    if (!response.ok) {
+                                                        throw new Error("获取笔记数据失败");
+                                                    }
                                                     const data = await response.json();
                                                     setNote(data);
                                                     await fetchRelatedContent();
                                                 } catch (error) {
                                                     console.error('获取数据失败:', error);
+                                                    toast.error("更新笔记数据失败");
+                                                } finally {
+                                                    setLoading(false);
                                                 }
                                             };
                                             fetchData();
@@ -136,7 +167,9 @@ export default function NotePage() {
                                             key={tag.id}
                                             id={tag.id}
                                             name={tag.name}
-                                            onDelete={() => handleDeleteTag(tag.id)}
+                                            size="sm"
+                                            showActions={true}
+                                            onRemove={() => handleRemoveTag(tag.id)}
                                         />
                                     ))
                                 ) : (
@@ -170,6 +203,7 @@ export default function NotePage() {
                                                             id={tag.id}
                                                             name={tag.name}
                                                             size="sm"
+                                                            showActions={false}
                                                         />
                                                     ))}
                                                     {paper.tags.length > 3 && (
@@ -217,6 +251,7 @@ export default function NotePage() {
                                                             id={tag.id}
                                                             name={tag.name}
                                                             size="sm"
+                                                            showActions={false}
                                                         />
                                                     ))}
                                                     {relatedNote.tags.length > 3 && (

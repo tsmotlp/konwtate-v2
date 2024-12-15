@@ -31,8 +31,8 @@ export async function POST(request: Request) {
         const formData = await request.formData();
         const paper = formData.get('paper') as File;
         const name = formData.get('name') as string;
-        const tagsJson = formData.get('tags') as string;
-        const tagIds = JSON.parse(tagsJson);
+        const tagIdsJson = formData.get('tagIds') as string;
+        const tagIds = JSON.parse(tagIdsJson);
 
         // 验证必需字段
         if (!name || !paper) {

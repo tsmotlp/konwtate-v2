@@ -90,7 +90,24 @@ export const TagCreator = ({ paperId, noteId, onTagCreated }: TagCreatorProps) =
                     throw new Error(errorData.message || "更新论文标签失败");
                 }
 
-                // 等待响应成功后再更新状态
+                const data = await response.json();
+                setSelectedTags(newSelectedTags);
+                onTagCreated?.();
+                toast.success("标签更新成功");
+            } else if (noteId) {
+                const response = await fetch(`/api/notes/${noteId}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        tagIds: newSelectedTags
+                    }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || "更新笔记标签失败");
+                }
+
                 const data = await response.json();
                 setSelectedTags(newSelectedTags);
                 onTagCreated?.();

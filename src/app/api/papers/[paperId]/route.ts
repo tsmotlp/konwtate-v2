@@ -33,20 +33,34 @@ export async function PATCH(
         const paperId = params.paperId;
         const body = await request.json();
 
+        // 验证请求体不为空
+        if (!body) {
+            return NextResponse.json(
+                { error: "请求体不能为空" },
+                { status: 400 }
+            );
+        }
+
         // 如果请求包含 tagIds，则更新标签
         if (body.tagIds) {
+            const currentPaper = await getPaper(paperId);
+            if (!currentPaper) {
+                return NextResponse.json(
+                    { error: "论文不存在" },
+                    { status: 404 }
+                );
+            }
+
+            const currentTagIds = currentPaper.tags.map(t => t.tag.id);
             const updatedPaper = await updatePaper(paperId, {
-                // 将新的标签 ID 数组设置为要添加的标签
-                addTagIds: body.tagIds,
-                // 获取当前论文的所有标签，并将不在新数组中的标签设置为要移除的标签
-                removeTagIds: (await getPaper(paperId))?.tags
-                    .map(t => t.tagId)
-                    .filter(id => !body.tagIds.includes(id)) || []
+                addTagIds: body.tagIds.filter((id: string) => !currentTagIds.includes(id)),
+                removeTagIds: currentTagIds.filter(id => !body.tagIds.includes(id))
             });
 
-            // 获取更新后的论文（包含标签信息）
-            const paperWithTags = await getPaper(paperId);
-            return NextResponse.json(paperWithTags);
+            // // 获取更新后的论文（包含标签信息）
+            // const paperWithTags = await getPaper(paperId);
+            // return NextResponse.json(paperWithTags);
+            return NextResponse.json(updatedPaper); 
         }
 
         // 处理其他字段的更新

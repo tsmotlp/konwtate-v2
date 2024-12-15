@@ -31,38 +31,51 @@ export async function PATCH(
     request: Request,
     { params }: { params: { noteId: string } }
 ) {
-    const noteId = await params.noteId;
-
     try {
+        const noteId = params.noteId;
         const body = await request.json();
-        const {
-            name,
-            content,
-            addTagIds,
-            removeTagIds,
-            addPaperIds,
-            removePaperIds
-        } = body;
 
-        const updatedNote = await updateNote(noteId, {
-            name,
-            content,
-            addTagIds,
-            removeTagIds,
-            addPaperIds,
-            removePaperIds
-        });
+        // 验证请求体不为空
+        if (!body) {
+            return NextResponse.json(
+                { error: "请求体不能为空" },
+                { status: 400 }
+            );
+        }
 
+        // 如果请求包含 tagIds，则更新标签
+        if (body.tagIds) {
+            const currentNote = await getNote(noteId);
+            if (!currentNote) {
+                return NextResponse.json(
+                    { error: "笔记不存在" },
+                    { status: 404 }
+                );
+            }
+
+            const currentTagIds = currentNote.tags.map(t => t.tag.id);
+            const updatedNote = await updateNote(noteId, {
+                addTagIds: body.tagIds.filter((id: string) => !currentTagIds.includes(id)),
+                removeTagIds: currentTagIds.filter(id => !body.tagIds.includes(id))
+            });
+
+            // 获取更新后的笔记（包含标签信息）
+            // const noteWithTags = await getNote(noteId);
+            // return NextResponse.json(noteWithTags);
+            return NextResponse.json(updatedNote);
+        }
+
+        // 处理其他字段的更新
+        const updatedNote = await updateNote(noteId, body);
         return NextResponse.json(updatedNote);
     } catch (error) {
-        console.error('Error updating note:', error);
+        console.error('更新笔记失败:', error);
         return NextResponse.json(
-            { error: "Failed to update note" },
+            { error: "更新笔记失败" },
             { status: 500 }
         );
     }
 }
-
 
 export async function DELETE(
     request: Request,

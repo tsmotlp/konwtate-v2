@@ -70,6 +70,7 @@ export const PaperUploader = () => {
         .filter(tagId => tagId.startsWith('temp_'))
         .map(tagId => {
           const tag = availableTags.find(t => t.id === tagId);
+          console.log("tag", tag);
           return tag?.name;
         })
         .filter(Boolean);
@@ -103,7 +104,7 @@ export const PaperUploader = () => {
       const formData = new FormData();
       formData.append("paper", paperData.paper);
       formData.append("name", paperData.name);
-      formData.append("tags", JSON.stringify(finalTagIds));
+      formData.append("tagIds", JSON.stringify(finalTagIds));
 
       const response = await axios.post("/api/papers", formData, {
         headers: {

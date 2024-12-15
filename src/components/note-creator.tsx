@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -25,9 +25,27 @@ interface NoteCreatorProps {
   onNoteCreated?: () => void;
 }
 
-export const NoteCreator = ({ paperId, availableTags, redirectToNote = false, onNoteCreated }: NoteCreatorProps) => {
+export const NoteCreator = ({ paperId, availableTags: initialTags, redirectToNote = false, onNoteCreated }: NoteCreatorProps) => {
   const router = useRouter();
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
+  const [availableTags, setAvailableTags] = useState<Array<{ id: string, name: string }>>(initialTags || []);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await fetch('/api/tags');
+        const tags = await response.json();
+        setAvailableTags(tags.map((tag: any) => ({
+          id: tag.id,
+          name: tag.name
+        })));
+      } catch (error) {
+        console.error('Failed to fetch tags:', error);
+        toast.error('获取标签失败');
+      }
+    };
+    fetchTags();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,6 +57,41 @@ export const NoteCreator = ({ paperId, availableTags, redirectToNote = false, on
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      // Handle new tags creation first
+      const newTags = values.tags
+        .filter(tagId => tagId.startsWith('temp_'))
+        .map(tagId => {
+          const tag = availableTags.find(t => t.id === tagId);
+          return tag?.name;
+        })
+        .filter(Boolean);
+
+      // Create new tags
+      const createdTags = await Promise.all(
+        newTags.map(async (tagName) => {
+          const response = await fetch('/api/tags', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: tagName })
+          });
+          if (!response.ok) {
+            throw new Error(`创建标签失败: ${tagName}`);
+          }
+          return response.json();
+        })
+      );
+
+      // Update tag IDs list with newly created tag IDs
+      const finalTagIds = values.tags.map(tagId => {
+        if (tagId.startsWith('temp_')) {
+          const tempTag = availableTags.find(t => t.id === tagId);
+          const createdTag = createdTags.find(t => t.name === tempTag?.name);
+          return createdTag?.id;
+        }
+        return tagId;
+      }).filter(Boolean);
+
+      // Create note with final tag IDs
       const response = await fetch("/api/notes", {
         method: "POST",
         headers: {
@@ -46,7 +99,7 @@ export const NoteCreator = ({ paperId, availableTags, redirectToNote = false, on
         },
         body: JSON.stringify({
           name: values.name,
-          tagIds: values.tags,
+          tagIds: finalTagIds,
           paperIds: paperId ? [paperId] : []
         }),
       });
