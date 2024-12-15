@@ -150,7 +150,7 @@ export const ForceGraph = () => {
       if (!updatedGraphData) {
         throw new Error('Failed to refresh graph data');
       }
-      
+
       setGraphData(updatedGraphData);
       toast.success('标签创建成功');
     } catch (error) {
@@ -175,7 +175,7 @@ export const ForceGraph = () => {
       // 重新获取图数据
       const updatedGraphData = await fetchGraphData();
       setGraphData(updatedGraphData);
-      
+
       toast.success(data.message || '标签删除成功');
     } catch (error) {
       console.error('Error deleting tag:', error);
@@ -185,14 +185,12 @@ export const ForceGraph = () => {
 
   return (
     <div className="w-full h-screen flex bg-gray-50 dark:bg-gray-900">
-      <Sidebar 
+      <Sidebar
         items={items}
         onItemClick={handleNodeClick}
         width={sidebarWidth}
-        onAddTag={handleAddTag}
-        onDeleteTag={handleDeleteTag}
       />
-      
+
       {/* Resizer */}
       <div
         className="w-1 cursor-ew-resize hover:bg-blue-500 active:bg-blue-600 transition-colors"
@@ -205,7 +203,7 @@ export const ForceGraph = () => {
           <div className="absolute top-4 right-4 z-10 flex gap-2">
             <GraphActions />
           </div>
-          
+
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-50/50 dark:bg-gray-900/50">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
@@ -291,10 +289,10 @@ export const ForceGraph = () => {
             />
           )}
           {hoveredNode && (
-            <NodeTooltip 
-              node={hoveredNode} 
-              position={popoverPosition} 
-              graphData={graphData} 
+            <NodeTooltip
+              node={hoveredNode}
+              position={popoverPosition}
+              graphData={graphData}
             />
           )}
         </Card>

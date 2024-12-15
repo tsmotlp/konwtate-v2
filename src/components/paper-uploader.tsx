@@ -13,7 +13,6 @@ import { FileIcon, Upload } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import axios from "axios"
 import { toast } from "sonner"
-import { Paper } from "@prisma/client"
 import { MultiSelect } from "@/components/ui/multi-select"
 import { useRouter } from "next/navigation"
 
@@ -44,7 +43,7 @@ export const PaperUploader = () => {
   const handleFileAccepted = async (acceptedFiles: File[]) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
-      
+
       // 验证文件大小 (例如 50MB 限制)
       if (file.size > 50 * 1024 * 1024) {
         toast.error("文件大小不能超过 50MB");
@@ -62,10 +61,10 @@ export const PaperUploader = () => {
     try {
       setIsUploading(true);
       setUploadProgress(0);
-      
+
       // 获取表单数据
       const paperData = form.getValues();
-      
+
       // 处理新创建的标签
       const newTags = paperData.tags
         .filter(tagId => tagId.startsWith('temp_'))
@@ -127,11 +126,11 @@ export const PaperUploader = () => {
       setIsPaperDialogOpen(false);
     } catch (error) {
       setUploadProgress(0);
-      
-      const errorMessage = error instanceof Error 
-        ? error.message 
+
+      const errorMessage = error instanceof Error
+        ? error.message
         : "上传文献失败，请稍后重试";
-      
+
       toast.error(errorMessage);
       console.error("Upload error:", error);
     } finally {
@@ -166,11 +165,11 @@ export const PaperUploader = () => {
     >
       <DialogTrigger asChild>
         <Button
-          variant="secondary"
+          variant="ghost"
           size="sm"
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold"
+          className="text-sm text-blue-500 hover:text-blue-600"
         >
-          <Upload className="h-4 w-4 mr-1" />
+          <Upload className="size-4" />
           上传文献
         </Button>
       </DialogTrigger>

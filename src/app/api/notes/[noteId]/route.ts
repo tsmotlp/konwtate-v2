@@ -5,11 +5,11 @@ export async function GET(
     request: Request,
     { params }: { params: { noteId: string } }
 ) {
-    const { noteId } = params;  // 不需要 await params
-    
+    const noteId = await params.noteId;
+
     try {
         const note = await getNote(noteId);
-        
+
         if (!note) {
             return NextResponse.json(
                 { error: "Note not found" },
@@ -31,8 +31,8 @@ export async function PATCH(
     request: Request,
     { params }: { params: { noteId: string } }
 ) {
-    const { noteId } = params;
-    
+    const noteId = await params.noteId;
+
     try {
         const body = await request.json();
         const {
@@ -61,15 +61,15 @@ export async function PATCH(
             { status: 500 }
         );
     }
-} 
+}
 
 
 export async function DELETE(
     request: Request,
     { params }: { params: { noteId: string } }
 ) {
-    const { noteId } = params;
-    
+    const noteId = await params.noteId;
+
     try {
         await deleteNote(noteId);
         return new NextResponse(null, { status: 204 });

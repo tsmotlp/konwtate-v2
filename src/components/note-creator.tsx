@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { MultiSelect } from "@/components/ui/multi-select"
+import { PlusIcon } from "lucide-react"
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "标题不能为空" }).max(200),
@@ -27,7 +28,7 @@ interface NoteCreatorProps {
 export const NoteCreator = ({ paperId, availableTags, redirectToNote = false, onNoteCreated }: NoteCreatorProps) => {
   const router = useRouter();
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
-  
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -82,6 +83,7 @@ export const NoteCreator = ({ paperId, availableTags, redirectToNote = false, on
           size="sm"
           className="text-sm text-blue-500 hover:text-blue-600"
         >
+          <PlusIcon className="size-4" />
           添加笔记
         </Button>
       </DialogTrigger>

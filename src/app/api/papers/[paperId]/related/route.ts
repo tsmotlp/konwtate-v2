@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
-import { getRelatedPapers } from '@/lib/db/paper';
+import { getRelatedContent } from '@/lib/db/paper';
 
 export async function GET(
     request: Request,
     { params }: { params: { paperId: string } }
 ) {
     try {
-        const paperId = params.paperId;
-        const relatedPapers = await getRelatedPapers(paperId);
-        return NextResponse.json(relatedPapers);
+        const paperId = await params.paperId;
+        const relatedContent = await getRelatedContent(paperId);
+        return NextResponse.json(relatedContent);
     } catch (error) {
         return NextResponse.json(
-            { error: "Failed to fetch related papers" },
+            { error: "获取相关内容失败" },
             { status: 500 }
         );
     }

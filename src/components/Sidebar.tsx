@@ -3,6 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Node } from '@/types/graph';
 import { useState, useEffect, useMemo } from 'react';
 import { SearchAndTagFilter } from '@/components/SearchAndTagFilter';
+import { Tag } from '@/components/Tag';
 
 interface SidebarProps {
   items: Array<{
@@ -14,25 +15,23 @@ interface SidebarProps {
   }>;
   onItemClick: (node: Node) => void;
   width: number;
-  onAddTag?: (newTag: string) => void;
-  onDeleteTag?: (tag: string) => void;
 }
 
-export const Sidebar = ({ items, onItemClick, width, onAddTag, onDeleteTag }: SidebarProps) => {
+export const Sidebar = ({ items, onItemClick, width }: SidebarProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
 
   const filteredItems = useMemo(() => {
     if (!items) return [];
-    
+
     return items.filter(item => {
-      const matchesSearch = !searchTerm || 
+      const matchesSearch = !searchTerm ||
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.tags && item.tags.some(tag => 
+        (item.tags && item.tags.some(tag =>
           tag.name.toLowerCase().includes(searchTerm.toLowerCase())
         ));
-      
-      const matchesTag = !selectedTagId || 
+
+      const matchesTag = !selectedTagId ||
         (item.tags && item.tags.some(tag => tag.id === selectedTagId));
 
       return matchesSearch && matchesTag;
@@ -45,7 +44,7 @@ export const Sidebar = ({ items, onItemClick, width, onAddTag, onDeleteTag }: Si
   };
 
   return (
-    <div 
+    <div
       className="h-full border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-4 flex flex-col"
       style={{ width: `${width}px` }}
     >
@@ -60,11 +59,9 @@ export const Sidebar = ({ items, onItemClick, width, onAddTag, onDeleteTag }: Si
         <h1 className="font-bold text-xl truncate flex-1 min-w-0">Knowledge Graph</h1>
       </div>
 
-      <SearchAndTagFilter 
-        items={items} 
-        onFilterChange={handleFilterChange} 
-        onAddTag={onAddTag} 
-        onDeleteTag={onDeleteTag} 
+      <SearchAndTagFilter
+        items={items}
+        onFilterChange={handleFilterChange}
       />
 
       <div className="flex-1 overflow-hidden">
@@ -83,23 +80,21 @@ export const Sidebar = ({ items, onItemClick, width, onAddTag, onDeleteTag }: Si
                   <span className="text-gray-500 dark:text-gray-400">
                     {item.type === 'paper' ? '📄' : '📝'}
                   </span>
-                  <span className={`text-sm truncate min-w-0 flex-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 ${
-                    item.type === 'paper' ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-600 dark:text-emerald-400'
-                  }`}>
+                  <span className={`text-sm truncate min-w-0 flex-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 ${item.type === 'paper' ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-600 dark:text-emerald-400'
+                    }`}>
                     {item.title}
                   </span>
                 </div>
                 {item.tags && item.tags.length > 0 && (
                   <div className="flex gap-1.5 flex-wrap mt-1.5">
                     {item.tags.slice(0, 3).map((tag) => (
-                      <span 
-                        key={tag.id} 
-                        className="text-xs px-2 py-0.5 bg-gray-50 dark:bg-gray-800/50 
-                          text-gray-600 dark:text-gray-300 rounded-lg border 
-                          border-gray-200 dark:border-gray-700"
-                      >
-                        #{tag.name}
-                      </span>
+                      <Tag
+                        key={tag.id}
+                        id={tag.id}
+                        name={tag.name}
+                        size="sm"
+                        showDelete={false}
+                      />
                     ))}
                     {item.tags.length > 3 && (
                       <span className="text-xs text-gray-400 dark:text-gray-500">

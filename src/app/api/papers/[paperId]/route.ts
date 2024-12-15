@@ -32,11 +32,30 @@ export async function PATCH(
     try {
         const paperId = params.paperId;
         const body = await request.json();
+
+        // 如果请求包含 tagIds，则更新标签
+        if (body.tagIds) {
+            const updatedPaper = await updatePaper(paperId, {
+                // 将新的标签 ID 数组设置为要添加的标签
+                addTagIds: body.tagIds,
+                // 获取当前论文的所有标签，并将不在新数组中的标签设置为要移除的标签
+                removeTagIds: (await getPaper(paperId))?.tags
+                    .map(t => t.tagId)
+                    .filter(id => !body.tagIds.includes(id)) || []
+            });
+
+            // 获取更新后的论文（包含标签信息）
+            const paperWithTags = await getPaper(paperId);
+            return NextResponse.json(paperWithTags);
+        }
+
+        // 处理其他字段的更新
         const updatedPaper = await updatePaper(paperId, body);
         return NextResponse.json(updatedPaper);
     } catch (error) {
+        console.error('更新论文失败:', error);
         return NextResponse.json(
-            { error: "Failed to update paper" },
+            { error: "更新论文失败" },
             { status: 500 }
         );
     }

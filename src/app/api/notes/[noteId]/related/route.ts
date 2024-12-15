@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server';
-import { getRelatedNotes } from '@/lib/db/note';
+import { getRelatedContent } from '@/lib/db/note';
 
 export async function GET(
     request: Request,
-    { params }: { params: { paperId: string } }
+    { params }: { params: { noteId: string } }
 ) {
     try {
-        const paperId = params.paperId;
-        const relatedNotes = await getRelatedNotes(paperId);
-        return NextResponse.json(relatedNotes);
+        const noteId = await params.noteId;
+        const relatedContent = await getRelatedContent(noteId);
+        return NextResponse.json(relatedContent);
     } catch (error) {
-        console.error('Error fetching related notes:', error);
         return NextResponse.json(
-            { error: "Failed to fetch related notes" },
+            { error: "获取相关内容失败" },
             { status: 500 }
         );
     }

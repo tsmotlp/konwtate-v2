@@ -229,7 +229,7 @@ export async function searchNotes(keyword: string) {
             createdAt: 'desc'
         }
     })
-} 
+}
 
 
 // 获取与指定论文相关的笔记（基于共同标签）
@@ -274,4 +274,74 @@ export async function getRelatedNotes(paperId: string) {
             createdAt: 'desc'
         }
     });
+}
+
+// 获取相关内容（论文和笔记）
+export async function getRelatedContent(noteId: string, limit = 5) {
+    const note = await prisma.note.findUnique({
+        where: { id: noteId },
+        include: {
+            tags: {
+                include: {
+                    tag: true
+                }
+            }
+        }
+    });
+
+    if (!note) return { relatedPapers: [], relatedNotes: [] };
+
+    // 获取当前笔记的所有标签ID
+    const tagIds = note.tags.map(t => t.tagId);
+
+    // 并行获取相关论文和笔记
+    const [relatedPapers, relatedNotes] = await Promise.all([
+        // 查找具有相同标签的论文
+        prisma.paper.findMany({
+            where: {
+                tags: {
+                    some: {
+                        tagId: {
+                            in: tagIds
+                        }
+                    }
+                }
+            },
+            include: {
+                tags: {
+                    include: {
+                        tag: true
+                    }
+                }
+            },
+            take: limit
+        }),
+        // 查找具有相同标签的其他笔记
+        prisma.note.findMany({
+            where: {
+                AND: [
+                    { id: { not: noteId } },
+                    {
+                        tags: {
+                            some: {
+                                tagId: {
+                                    in: tagIds
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            include: {
+                tags: {
+                    include: {
+                        tag: true
+                    }
+                }
+            },
+            take: limit
+        })
+    ]);
+
+    return { relatedPapers, relatedNotes };
 }

@@ -281,4 +281,74 @@ export async function getRelatedPapers(paperId: string, limit = 5) {
     });
 
     return relatedPapers;
+}
+
+// 获取相关内容（论文和笔记）
+export async function getRelatedContent(paperId: string, limit = 5) {
+    const paper = await prisma.paper.findUnique({
+        where: { id: paperId },
+        include: {
+            tags: {
+                include: {
+                    tag: true
+                }
+            }
+        }
+    });
+
+    if (!paper) return { relatedPapers: [], relatedNotes: [] };
+
+    // 获取当前论文的所有标签ID
+    const tagIds = paper.tags.map(t => t.tagId);
+
+    // 并行获取相关论文和笔记
+    const [relatedPapers, relatedNotes] = await Promise.all([
+        // 查找具有相同标签的其他论文
+        prisma.paper.findMany({
+            where: {
+                AND: [
+                    { id: { not: paperId } },
+                    {
+                        tags: {
+                            some: {
+                                tagId: {
+                                    in: tagIds
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            include: {
+                tags: {
+                    include: {
+                        tag: true
+                    }
+                }
+            },
+            take: limit
+        }),
+        // 查找具有相同标签的笔记
+        prisma.note.findMany({
+            where: {
+                tags: {
+                    some: {
+                        tagId: {
+                            in: tagIds
+                        }
+                    }
+                }
+            },
+            include: {
+                tags: {
+                    include: {
+                        tag: true
+                    }
+                }
+            },
+            take: limit
+        })
+    ]);
+
+    return { relatedPapers, relatedNotes };
 } 
