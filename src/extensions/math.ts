@@ -131,11 +131,9 @@ export const Mathematics = Node.create({
     addNodeView() {
         return ({ node, editor, getPos }) => {
             const dom = document.createElement(node.attrs.displayMode ? 'div' : 'span')
-            dom.classList.add('math-node')
-            dom.classList.add(node.attrs.displayMode ? 'math-display' : 'math-inline')
-            dom.setAttribute('data-type', node.attrs.displayMode ? 'math-display' : 'math-inline')
-            dom.setAttribute('data-text', node.attrs.text)
-            dom.setAttribute('data-display', node.attrs.displayMode.toString())
+            dom.classList.add('Tiptap-mathematics-render')
+            dom.classList.add('Tiptap-mathematics-render--editable')
+            dom.setAttribute('data-type', node.attrs.displayMode ? 'display' : 'inline')
 
             const renderMath = () => {
                 try {
@@ -152,13 +150,24 @@ export const Mathematics = Node.create({
 
             renderMath()
 
+            dom.addEventListener('dblclick', () => {
+                const event = new CustomEvent('edit-math', {
+                    detail: {
+                        text: node.attrs.text,
+                        displayMode: node.attrs.displayMode,
+                        pos: getPos(),
+                    },
+                    bubbles: true,
+                })
+                dom.dispatchEvent(event)
+            })
+
             return {
                 dom,
                 update: (updatedNode: ProseMirrorNode) => {
                     if (updatedNode.type !== node.type) return false
                     if (updatedNode.attrs.text !== node.attrs.text) {
                         node = updatedNode
-                        dom.setAttribute('data-text', updatedNode.attrs.text)
                         renderMath()
                     }
                     return true

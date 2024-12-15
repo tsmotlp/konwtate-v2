@@ -685,3 +685,16 @@ body {
 .dark .math-node.ProseMirror-selectednode {
   outline-color: #228be6;
 }
+
+.Tiptap-mathematics-render {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.Tiptap-mathematics-render:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark .Tiptap-mathematics-render:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}

@@ -28,10 +28,11 @@ import { all, createLowlight } from 'lowlight'
 import { useEditorStore } from '@/hooks/use-editor-store'
 import { FontSizeExtension } from '@/extensions/font-size'
 import { LineHeightExtension } from '@/extensions/line-height'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { debounce } from 'lodash'
 import { toast } from 'sonner'
 import { useParams } from 'next/navigation'
+import { MathInputDialog } from '../math-input-dialog'
 
 // create a lowlight instance with all languages loaded
 const lowlight = createLowlight(all)
@@ -238,6 +239,54 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
         }
     }, [editor, noteId, initialContent])
 
+    const [mathDialogState, setMathDialogState] = useState({
+        open: false,
+        displayMode: false,
+        initialText: '',
+        pos: 0,
+    })
+
+    useEffect(() => {
+        const handleEditMath = (event: CustomEvent) => {
+            const { text, displayMode, pos } = event.detail
+            setMathDialogState({
+                open: true,
+                displayMode,
+                initialText: text,
+                pos,
+            })
+        }
+
+        // 添加事件监听
+        document.addEventListener('edit-math', handleEditMath as EventListener)
+
+        return () => {
+            // 清理事件监听
+            document.removeEventListener('edit-math', handleEditMath as EventListener)
+        }
+    }, [editor])
+
+    const handleMathUpdate = (text: string) => {
+        if (!editor) return
+
+        const { pos, displayMode } = mathDialogState
+        editor
+            .chain()
+            .focus()
+            .setNodeSelection(pos)
+            .deleteSelection()
+            .insertContent({
+                type: 'mathematics',
+                attrs: {
+                    text,
+                    displayMode,
+                },
+            })
+            .run()
+
+        setMathDialogState(prev => ({ ...prev, open: false }))
+    }
+
     return (
         <div className="flex flex-col w-full" style={{ height: containerHeight }}>
             <div className="flex-1 overflow-hidden">
@@ -250,6 +299,15 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
                     </div>
                 </div>
             </div>
+
+            {/* 添加数学公式编辑对话框 */}
+            <MathInputDialog
+                open={mathDialogState.open}
+                onClose={() => setMathDialogState(prev => ({ ...prev, open: false }))}
+                onConfirm={handleMathUpdate}
+                initialText={mathDialogState.initialText}
+                displayMode={mathDialogState.displayMode}
+            />
         </div>
     )
 }

@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import katex from "katex"
 
 interface MathInputDialogProps {
@@ -18,6 +18,22 @@ export function MathInputDialog({
     initialText = "",
     displayMode = false,
 }: MathInputDialogProps) {
+    useEffect(() => {
+        if (open && initialText) {
+            setText(initialText)
+            try {
+                const rendered = katex.renderToString(initialText, {
+                    displayMode,
+                    throwOnError: false,
+                })
+                setPreview(rendered)
+                setError("")
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "渲染错误")
+            }
+        }
+    }, [open, initialText, displayMode])
+
     const [text, setText] = useState(initialText)
     const [preview, setPreview] = useState("")
     const [error, setError] = useState<string>("")
@@ -41,11 +57,18 @@ export function MathInputDialog({
         onClose()
     }
 
+    const handleClose = () => {
+        setText("")
+        setPreview("")
+        setError("")
+        onClose()
+    }
+
     return (
-        <Dialog open={open} onOpenChange={onClose}>
+        <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
-                    <DialogTitle>{displayMode ? "插入行间公式" : "插入行内公式"}</DialogTitle>
+                    <DialogTitle>{displayMode ? "编辑行间公式" : "编辑行内公式"}</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4">
                     <Textarea
@@ -74,7 +97,7 @@ export function MathInputDialog({
                         </button>
                         <button
                             className="px-4 py-2 text-sm rounded bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                            onClick={onClose}
+                            onClick={handleClose}
                         >
                             取消
                         </button>
