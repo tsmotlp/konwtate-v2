@@ -111,7 +111,7 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
         editorProps: {
             attributes: {
                 class: 'prose prose-slate dark:prose-invert max-w-none focus:outline-none w-full bg-white dark:bg-gray-900 print:border-0',
-                style: 'padding: 2rem 3.5rem; min-height: 100%;',
+                style: 'padding: 1rem 1rem; min-height: 100%;',
             },
         },
         extensions: [

@@ -11,11 +11,6 @@ declare module '@tiptap/core' {
     }
 }
 
-interface MathNodeAttributes {
-    text: string
-    displayMode: boolean
-}
-
 export const Mathematics = Node.create({
     name: 'mathematics',
 
@@ -31,7 +26,7 @@ export const Mathematics = Node.create({
         return {
             text: {
                 default: '',
-                parseHTML: element => element.getAttribute('data-text'),
+                parseHTML: element => element.getAttribute('data-text') || '',
                 renderHTML: attributes => ({
                     'data-text': attributes.text,
                 }),
@@ -54,7 +49,7 @@ export const Mathematics = Node.create({
         return [
             {
                 tag: 'span[data-type="math-inline"]',
-                getAttrs: (node: HTMLElement | string): MathNodeAttributes | null => {
+                getAttrs: (node: HTMLElement | string): any => {
                     if (typeof node === 'string') return null
                     return {
                         text: node.getAttribute('data-text') || '',
@@ -64,7 +59,7 @@ export const Mathematics = Node.create({
             },
             {
                 tag: 'div[data-type="math-display"]',
-                getAttrs: (node: HTMLElement | string): MathNodeAttributes | null => {
+                getAttrs: (node: HTMLElement | string): any => {
                     if (typeof node === 'string') return null
                     return {
                         text: node.getAttribute('data-text') || '',
@@ -83,48 +78,46 @@ export const Mathematics = Node.create({
             })
 
             const tag = node.attrs.displayMode ? 'div' : 'span'
-            return [tag, {
-                class: `math-node ${node.attrs.displayMode ? 'math-display' : 'math-inline'}`,
+            const attrs = mergeAttributes({
+                class: `Tiptap-mathematics-render ${node.attrs.displayMode ? 'math-display' : 'math-inline'}`,
                 'data-type': node.attrs.displayMode ? 'math-display' : 'math-inline',
                 'data-text': node.attrs.text,
                 'data-display': node.attrs.displayMode.toString(),
-                innerHTML: renderedKatex,
-            }]
+            })
+
+            return [tag, attrs, renderedKatex]
         } catch (error) {
+            console.error('Math rendering error:', error)
             const tag = node.attrs.displayMode ? 'div' : 'span'
-            return [tag, {
-                class: `math-node ${node.attrs.displayMode ? 'math-display' : 'math-inline'} math-error`,
+            return [tag, mergeAttributes({
+                class: `Tiptap-mathematics-render math-error`,
                 'data-type': node.attrs.displayMode ? 'math-display' : 'math-inline',
                 'data-text': node.attrs.text,
                 'data-display': node.attrs.displayMode.toString(),
-            }, node.attrs.text || '']
+            }), node.attrs.text || '']
         }
     },
 
     addCommands() {
         return {
-            setMathInline:
-                options =>
-                    ({ commands }) => {
-                        return commands.insertContent({
-                            type: this.name,
-                            attrs: {
-                                ...options,
-                                displayMode: false,
-                            },
-                        })
+            setMathInline: options => ({ commands }) => {
+                return commands.insertContent({
+                    type: this.name,
+                    attrs: {
+                        ...options,
+                        displayMode: false,
                     },
-            setMathDisplay:
-                options =>
-                    ({ commands }) => {
-                        return commands.insertContent({
-                            type: this.name,
-                            attrs: {
-                                ...options,
-                                displayMode: true,
-                            },
-                        })
+                })
+            },
+            setMathDisplay: options => ({ commands }) => {
+                return commands.insertContent({
+                    type: this.name,
+                    attrs: {
+                        ...options,
+                        displayMode: true,
                     },
+                })
+            },
         }
     },
 
@@ -137,10 +130,11 @@ export const Mathematics = Node.create({
 
             const renderMath = () => {
                 try {
-                    dom.innerHTML = katex.renderToString(node.attrs.text || '', {
+                    const rendered = katex.renderToString(node.attrs.text || '', {
                         displayMode: node.attrs.displayMode,
                         throwOnError: false,
                     })
+                    dom.innerHTML = rendered
                 } catch (error) {
                     console.error('Math rendering error:', error)
                     dom.classList.add('math-error')
@@ -151,15 +145,17 @@ export const Mathematics = Node.create({
             renderMath()
 
             dom.addEventListener('dblclick', () => {
-                const event = new CustomEvent('edit-math', {
-                    detail: {
-                        text: node.attrs.text,
-                        displayMode: node.attrs.displayMode,
-                        pos: getPos(),
-                    },
-                    bubbles: true,
-                })
-                dom.dispatchEvent(event)
+                if (typeof getPos === 'function') {
+                    const event = new CustomEvent('edit-math', {
+                        detail: {
+                            text: node.attrs.text,
+                            displayMode: node.attrs.displayMode,
+                            pos: getPos(),
+                        },
+                        bubbles: true,
+                    })
+                    dom.dispatchEvent(event)
+                }
             })
 
             return {

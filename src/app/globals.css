@@ -357,13 +357,28 @@ body {
       }
     }
 
-    /* 块级公式样式 */
+    /* 行间公式样式 */
     &[data-type="display"] {
       display: block;
       padding: 1rem;
       margin: 1rem 0;
       text-align: center;
       min-height: 2em;
+      overflow-x: auto;
+      max-width: 100%;
+
+      &::-webkit-scrollbar {
+        height: 4px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 2px;
+      }
 
       .katex {
         font-size: 1.2em;
@@ -371,37 +386,21 @@ body {
 
       .katex-display {
         margin: 0;
-        text-align: center;
+        overflow-x: auto;
+        overflow-y: hidden;
+        max-width: 100%;
+        padding: 0.5em 0;
+        transform-origin: left center;
+        transition: transform 0.2s ease;
       }
     }
 
-    /* 悬停效果 */
+    /* 编辑状态样式 */
     &--editable {
       position: relative;
 
       &:hover {
         background-color: rgba(0, 0, 0, 0.05);
-      }
-
-      /* 编辑提示 */
-      &::after {
-        content: '点击编辑';
-        position: absolute;
-        top: -1.5em;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 0.2em 0.5em;
-        border-radius: 4px;
-        font-size: 0.8em;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-        pointer-events: none;
-      }
-
-      &:hover::after {
-        opacity: 1;
       }
     }
   }
@@ -697,4 +696,312 @@ body {
 
 .dark .Tiptap-mathematics-render:hover {
   background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* 添加 Firefox 滚动条样式 */
+.Tiptap-mathematics-render[data-type="display"] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.dark .Tiptap-mathematics-render[data-type="display"] {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* KaTeX 公式编号样式优化 */
+.Tiptap-mathematics-render[data-type="display"] {
+  /* 容器设置 */
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  padding: 1rem;
+  margin: 1rem 0;
+
+  /* 隐藏外层滚动条 */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  .katex-display {
+    /* 使用 flex 布局 */
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    width: max-content;
+    /* 允许容器根据内容扩展 */
+    min-width: 100%;
+  }
+
+  .katex-html {
+    /* 移除内部滚动 */
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    width: auto;
+  }
+
+  /* 编号样式 */
+  .katex-html>.tag {
+    position: static !important;
+    float: none !important;
+    margin-left: 2em;
+    padding-left: 1em;
+    flex-shrink: 0;
+    order: 2;
+    /* 确保编号在最右侧 */
+  }
+
+  /* 公式主体 */
+  .katex-html>.base {
+    width: auto;
+    order: 1;
+  }
+}
+
+/* 暗色模式适配 */
+.dark .Tiptap-mathematics-render[data-type="display"] {
+  .katex-html>.tag {
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+/* 移除多余的滚动条样式 */
+.Tiptap-mathematics-render[data-type="display"] .katex-html::-webkit-scrollbar {
+  display: none;
+}
+
+/* 数学公式对话框样式 */
+.preview-container {
+  /* 预览容器样式 */
+  overflow-x: auto;
+  max-width: 100%;
+  padding: 0.5rem 0;
+
+  /* 滚动条样式 */
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+  }
+
+  /* KaTeX 预览样式 */
+  .katex-display {
+    margin: 0;
+    overflow-x: visible;
+    overflow-y: hidden;
+    max-width: none;
+  }
+
+  .katex {
+    text-rendering: optimizeLegibility;
+    white-space: nowrap;
+  }
+}
+
+/* 暗色模式适配 */
+.dark .preview-container::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 文本输入框样式优化 */
+.font-mono {
+  font-family: 'JetBrainsMono', monospace;
+  line-height: 1.5;
+  tab-size: 4;
+}
+
+/* 数学公式对话框样式 */
+.preview-math {
+  .katex-display {
+    /* 使用 flex 布局 */
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .katex-html {
+    /* 移除内部滚动 */
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    width: auto;
+  }
+
+  /* 编号样式 */
+  .katex-html>.tag {
+    position: static !important;
+    float: none !important;
+    margin-left: 2em;
+    padding-left: 1em;
+    flex-shrink: 0;
+    order: 2;
+  }
+
+  /* 公式主体 */
+  .katex-html>.base {
+    width: auto;
+    order: 1;
+  }
+}
+
+/* 自定义滚动条样式 */
+.custom-scrollbar {
+  /* 平滑滚动 */
+  scroll-behavior: smooth;
+
+  /* 仅在内容超出时显示滚动条 */
+  overflow-y: overlay;
+
+  /* 滚动条样式 */
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background-color: transparent;
+  }
+
+  /* 滚动条轨道 */
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  /* 滚动条滑块 */
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(209, 213, 219, 0);
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+
+  /* 仅在悬停和滚动时显示滚动条 */
+  &:hover::-webkit-scrollbar-thumb,
+  &:active::-webkit-scrollbar-thumb {
+    background-color: rgba(209, 213, 219, 0.8);
+
+    &:hover {
+      background-color: rgba(156, 163, 175, 0.8);
+    }
+  }
+}
+
+/* 深色模式滚动条 */
+.dark .custom-scrollbar {
+
+  &:hover::-webkit-scrollbar-thumb,
+  &:active::-webkit-scrollbar-thumb {
+    background-color: rgba(75, 85, 99, 0.8);
+
+    &:hover {
+      background-color: rgba(107, 114, 128, 0.8);
+    }
+  }
+}
+
+/* 修改行间公式的样式 */
+.Tiptap-mathematics-render {
+  &[data-type="display"] {
+    /* 基础容器设置 */
+    width: 100%;
+    margin: 1rem 0;
+    padding: 0;
+
+    /* 使用grid布局实现居中 */
+    display: grid;
+    justify-content: center;
+
+    /* 内部滚动容器 */
+    .katex-display {
+      display: inline-block !important;
+      /* 改用inline-block */
+      margin: 0;
+      padding: 0;
+      overflow-x: auto;
+      max-width: 100%;
+
+      /* 滚动条样式 */
+      &::-webkit-scrollbar {
+        height: 4px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 2px;
+      }
+    }
+
+    .katex-html {
+      padding: 1rem 2rem;
+      /* 给公式内容添加内边距 */
+      text-align: center;
+      min-width: min-content;
+      /* 确保内容不会被压缩 */
+    }
+
+    /* 确保公式内容不会被压缩 */
+    .katex {
+      display: inline-block;
+      white-space: nowrap;
+      text-align: center;
+    }
+  }
+}
+
+/* 编辑器中的行间公式容器样式 */
+.tiptap {
+  .ProseMirror {
+    div[data-type="math-display"] {
+      width: 100%;
+      margin: 1em 0;
+      display: grid;
+      /* 使用grid布局 */
+      justify-content: center;
+
+      /* 滚动条样式 */
+      .katex-display {
+        overflow-x: auto;
+        max-width: 100%;
+
+        &::-webkit-scrollbar {
+          height: 4px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background-color: rgba(0, 0, 0, 0.2);
+          border-radius: 2px;
+        }
+      }
+    }
+  }
+}
+
+/* 暗色模式滚动条 */
+.dark {
+
+  .Tiptap-mathematics-render[data-type="display"],
+  .ProseMirror div[data-type="math-display"] {
+    .katex-display::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  }
 }
