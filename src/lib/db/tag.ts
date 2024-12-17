@@ -135,28 +135,64 @@ export async function searchTags(keyword: string) {
   })
 }
 
-// 获取标签使用统计
+// 获取标签详细信息及相关内容
 export async function getTagStats(id: string) {
-  const tag = await prisma.tag.findUnique({
-    where: { id },
-    include: {
-      _count: {
-        select: {
-          papers: true,
-          notes: true
+  const [tag, papers, notes] = await prisma.$transaction([
+    // 获取标签基本信息和计数
+    prisma.tag.findUniqueOrThrow({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            papers: true,
+            notes: true
+          }
         }
       }
-    }
-  })
+    }),
 
-  if (!tag) {
-    throw new Error('标签不存在')
-  }
+    // 获取相关论文
+    prisma.paper.findMany({
+      where: {
+        tags: {
+          some: { tagId: id }
+        }
+      },
+      include: {
+        tags: {
+          include: {
+            tag: true
+          }
+        }
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    }),
+
+    // 获取相关笔记
+    prisma.note.findMany({
+      where: {
+        tags: {
+          some: { tagId: id }
+        }
+      },
+      include: {
+        tags: {
+          include: {
+            tag: true
+          }
+        }
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    })
+  ]);
 
   return {
-    id: tag.id,
-    name: tag.name,
-    paperCount: tag._count.papers,
-    noteCount: tag._count.notes
-  }
+    tag,
+    papers,
+    notes
+  };
 } 

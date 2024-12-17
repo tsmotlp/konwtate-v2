@@ -12,6 +12,7 @@ import { GraphActions } from '@/components/GraphActions';
 import { Sidebar } from '@/components/Sidebar';
 import { fetchGraphData } from '@/utils/graphDataFetcher';
 import { toast } from 'sonner';
+import { Tag } from '@prisma/client';
 
 const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), {
   ssr: false
@@ -24,7 +25,7 @@ export const ForceGraph = () => {
   const [hoveredNode, setHoveredNode] = useState<Node | null>(null);
   const [popoverPosition, setPopoverPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
-  const [sidebarWidth, setSidebarWidth] = useState(360);
+  const [sidebarWidth, setSidebarWidth] = useState(500);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,21 +76,21 @@ export const ForceGraph = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    const loadGraphData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await fetchGraphData();
-        setGraphData(data);
-      } catch (error) {
-        console.error('Error loading graph data:', error);
-        setError('Failed to load graph data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const loadGraphData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await fetchGraphData();
+      setGraphData(data);
+    } catch (error) {
+      console.error('Error loading graph data:', error);
+      setError('Failed to load graph data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadGraphData();
   }, []);
 
@@ -104,9 +105,13 @@ export const ForceGraph = () => {
         tags: node.tags
           ?.map(tagId => {
             const tagNode = graphData.nodes.find(n => n.id === tagId && n.type === 'tag');
-            return tagNode ? { id: tagNode.id, name: tagNode.name } : undefined;
+            return tagNode ? {
+              id: tagNode.id,
+              name: tagNode.name,
+              updatedAt: tagNode.updatedAt || new Date()
+            } : undefined;
           })
-          .filter((tag): tag is { id: string; name: string } => tag !== undefined)
+          .filter((tag): tag is Tag => tag !== undefined)
       }));
 
     return allItems
@@ -129,66 +134,13 @@ export const ForceGraph = () => {
     }
   };
 
-  const handleAddTag = async (newTag: string) => {
-    try {
-      const response = await fetch('/api/tags', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: newTag }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || '创建标签失败');
-      }
-
-      // 重新获取图数据
-      const updatedGraphData = await fetchGraphData();
-      if (!updatedGraphData) {
-        throw new Error('Failed to refresh graph data');
-      }
-
-      setGraphData(updatedGraphData);
-      toast.success('标签创建成功');
-    } catch (error) {
-      console.error('Error adding tag:', error);
-      toast.error(error instanceof Error ? error.message : '创建标签失败');
-      throw error;
-    }
-  };
-
-  const handleDeleteTag = async (tagId: string) => {
-    try {
-      const response = await fetch(`/api/tags/${encodeURIComponent(tagId)}`, {
-        method: 'DELETE',
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error);
-      }
-
-      // 重新获取图数据
-      const updatedGraphData = await fetchGraphData();
-      setGraphData(updatedGraphData);
-
-      toast.success(data.message || '标签删除成功');
-    } catch (error) {
-      console.error('Error deleting tag:', error);
-      toast.error(error instanceof Error ? error.message : '删除标签失败');
-    }
-  };
-
   return (
     <div className="w-full h-screen flex bg-gray-50 dark:bg-gray-900">
       <Sidebar
         items={items}
         onItemClick={handleNodeClick}
         width={sidebarWidth}
+        onUpdate={loadGraphData}
       />
 
       {/* Resizer */}

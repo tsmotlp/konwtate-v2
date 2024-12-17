@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { updateTag, deleteTag } from '@/lib/db/tag';
-
-const prisma = new PrismaClient();
+import { getTagStats, updateTag, deleteTag } from '@/lib/db/tag';
 
 export async function GET(
     request: Request,
@@ -10,72 +7,18 @@ export async function GET(
 ) {
     try {
         const { tagId } = params;
-
-        // 获取标签相关的所有论文和笔记
-        const [papers, notes] = await Promise.all([
-            prisma.paper.findMany({
-                where: {
-                    tags: {
-                        some: {
-                            tagId
-                        }
-                    }
-                },
-                select: {
-                    id: true,
-                    name: true,
-                    url: true,
-                    annotations: true,
-                    updatedAt: true
-                }
-            }),
-            prisma.note.findMany({
-                where: {
-                    tags: {
-                        some: {
-                            tagId
-                        }
-                    }
-                },
-                select: {
-                    id: true,
-                    name: true,
-                    content: true,
-                    updatedAt: true
-                }
-            })
-        ]);
-
-        // 转换为统一的文档格式
-        const documents = [
-            ...papers.map(paper => ({
-                id: paper.id,
-                title: paper.name,
-                type: 'paper' as const,
-                excerpt: paper.annotations?.slice(0, 200) || '',
-                lastModified: paper.updatedAt.toISOString()
-            })),
-            ...notes.map(note => ({
-                id: note.id,
-                title: note.name,
-                type: 'note' as const,
-                excerpt: note.content?.slice(0, 200) || '',
-                lastModified: note.updatedAt.toISOString()
-            }))
-        ].sort((a, b) => 
-            new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
-        );
-
-        return NextResponse.json({ documents });
+        const data = await getTagStats(tagId);
+        return NextResponse.json(data);
     } catch (error) {
-        console.error('Error fetching documents:', error);
+        console.error('Error fetching tag data:', error);
         return NextResponse.json(
-            { error: "Failed to fetch documents" },
+            { error: "获取标签数据失败" },
             { status: 500 }
         );
     }
 }
 
+// 更新标签名称
 export async function PATCH(
     request: Request,
     { params }: { params: { tagId: string } }
@@ -86,7 +29,7 @@ export async function PATCH(
 
         if (!name || typeof name !== 'string') {
             return NextResponse.json(
-                { error: "Name is required" },
+                { error: "标签名称不能为空" },
                 { status: 400 }
             );
         }
@@ -96,18 +39,19 @@ export async function PATCH(
     } catch (error) {
         if (error instanceof Error && error.message === '标签名称已存在') {
             return NextResponse.json(
-                { error: "Tag name already exists" },
+                { error: "标签名称已存在" },
                 { status: 409 }
             );
         }
         console.error('Error updating tag:', error);
         return NextResponse.json(
-            { error: "Failed to update tag" },
+            { error: "更新标签失败" },
             { status: 500 }
         );
     }
 }
 
+// 删除标签
 export async function DELETE(
     request: Request,
     { params }: { params: { tagId: string } }
@@ -119,7 +63,7 @@ export async function DELETE(
     } catch (error) {
         console.error('Error deleting tag:', error);
         return NextResponse.json(
-            { error: "Failed to delete tag" },
+            { error: "删除标签失败" },
             { status: 500 }
         );
     }

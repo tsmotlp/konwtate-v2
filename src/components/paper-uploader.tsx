@@ -66,36 +66,33 @@ export const PaperUploader = () => {
       const paperData = form.getValues();
 
       // 处理新创建的标签
-      const newTags = paperData.tags
+      const newTagPromises = paperData.tags
         .filter(tagId => tagId.startsWith('temp_'))
-        .map(tagId => {
+        .map(async tagId => {
           const tag = availableTags.find(t => t.id === tagId);
-          console.log("tag", tag);
-          return tag?.name;
-        })
-        .filter(Boolean);
+          if (!tag) return null;
 
-      // 创建新标签
-      const createdTags = await Promise.all(
-        newTags.map(async (tagName) => {
           const response = await fetch('/api/tags', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: tagName })
+            body: JSON.stringify({ name: tag.name })
           });
-          if (!response.ok) {
-            throw new Error(`创建标签失败: ${tagName}`);
-          }
-          return response.json();
-        })
-      );
 
-      // 更新标签ID列表
+          if (!response.ok) {
+            throw new Error(`创建标签失败: ${tag.name}`);
+          }
+
+          return await response.json();
+        });
+
+      const createdTags = await Promise.all(newTagPromises);
+
+      // 更新标签ID列表，保留现有标签ID，替换临时ID为新创建的标签ID
       const finalTagIds = paperData.tags.map(tagId => {
         if (tagId.startsWith('temp_')) {
           const tempTag = availableTags.find(t => t.id === tagId);
-          const createdTag = createdTags.find(t => t.name === tempTag?.name);
-          return createdTag?.id;
+          const createdTag = createdTags.find(t => t.tag?.name === tempTag?.name);
+          return createdTag?.tag?.id;
         }
         return tagId;
       }).filter(Boolean);

@@ -120,7 +120,7 @@ export const SearchAndTagFilter: React.FC<SearchAndTagFilterProps> = ({ items, o
         <div className="flex justify-between items-center mb-2">
           <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400">Tags</h3>
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 p-2">
           {displayedTags.map(tag => (
             <TagComponent
               key={tag.id}

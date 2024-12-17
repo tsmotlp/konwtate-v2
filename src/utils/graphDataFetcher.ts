@@ -54,7 +54,7 @@ function processGraphData(data: FetchedData): GraphData {
   const nodes: Node[] = [];
   const links: Link[] = [];
 
-  // 处理标签节点
+  // 首先创建所有节点
   data.tags.forEach(tag => {
     nodes.push({
       id: tag.id,
@@ -67,7 +67,7 @@ function processGraphData(data: FetchedData): GraphData {
     });
   });
 
-  // 处理论文节点和其关系
+  // 处理 papers，添加 references 和 backlinks 数组
   data.papers.forEach(paper => {
     nodes.push({
       id: paper.id,
@@ -75,22 +75,12 @@ function processGraphData(data: FetchedData): GraphData {
       type: 'paper',
       updatedAt: paper.updatedAt,
       tags: paper.tags.map(t => t.tagId),
-      references: [],
-      backlinks: []
-    });
-
-    // 添加论文和标签的关系
-    paper.tags?.forEach(tagRelation => {
-      links.push({
-        source: paper.id,
-        target: tagRelation.tagId,
-        type: 'tag',
-        value: 1
-      });
+      references: [], // paper 引用的其他内容
+      backlinks: []   // 引用这个 paper 的其他内容
     });
   });
 
-  // 处理笔记节点和其关系
+  // 处理 notes，同时建立与 papers 的关联
   data.notes.forEach(note => {
     nodes.push({
       id: note.id,
@@ -98,27 +88,36 @@ function processGraphData(data: FetchedData): GraphData {
       type: 'note',
       updatedAt: note.updatedAt,
       tags: note.tags.map(t => t.tagId),
-      references: note.papers.map(p => p.paperId),
-      backlinks: []
+      references: note.papers.map(p => p.paperId),  // 笔记引用的论文
+      backlinks: []  // 引用这个笔记的内容
     });
 
-    // 笔记和标签的关系
-    note.tags?.forEach(tagRelation => {
+    // 为每个笔记创建与其引用的论文之间的连接
+    note.papers.forEach(paperRef => {
+      // 添加从笔记到论文的连接
       links.push({
         source: note.id,
+        target: paperRef.paperId,
+        type: 'reference',
+        value: 2
+      });
+
+      // 更新论文的 backlinks
+      const paperNode = nodes.find(n => n.id === paperRef.paperId);
+      if (paperNode) {
+        paperNode.backlinks.push(note.id);
+      }
+    });
+  });
+
+  // 处理标签关系
+  [...data.papers, ...data.notes].forEach(item => {
+    item.tags?.forEach(tagRelation => {
+      links.push({
+        source: item.id,
         target: tagRelation.tagId,
         type: 'tag',
         value: 1
-      });
-    });
-
-    // 笔记和论文的关系
-    note.papers?.forEach(paperRelation => {
-      links.push({
-        source: note.id,
-        target: paperRelation.paperId,
-        type: 'reference',
-        value: 2
       });
     });
   });
@@ -133,8 +132,8 @@ function processGraphData(data: FetchedData): GraphData {
     ).values()
   );
 
-  return { 
+  return {
     nodes: nodes.filter(Boolean), // 移除可能的空值
-    links: uniqueLinks 
+    links: uniqueLinks
   };
 } 

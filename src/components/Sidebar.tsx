@@ -7,18 +7,19 @@ import { ContentListItem } from '@/components/ContentListItem';
 import { Tag } from '@prisma/client';
 
 interface SidebarProps {
-  items: Array<{
+  items: {
     id: string;
     title: string;
     type: 'paper' | 'note';
     updatedAt: Date;
     tags?: Tag[];
-  }>;
+  }[];
   onItemClick: (node: Node) => void;
+  onUpdate?: () => void;
   width: number;
 }
 
-export const Sidebar = ({ items, onItemClick, width }: SidebarProps) => {
+export const Sidebar = ({ items, onItemClick, onUpdate, width }: SidebarProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
 
@@ -51,13 +52,13 @@ export const Sidebar = ({ items, onItemClick, width }: SidebarProps) => {
     >
       <div className="flex items-center gap-2 mb-6 w-full">
         <Image
-          src="/logo.png"
+          src="/logo2.svg"
           alt="Logo"
-          width={32}
-          height={32}
+          width={42}
+          height={42}
           className="rounded-lg flex-shrink-0"
         />
-        <h1 className="font-bold text-xl truncate flex-1 min-w-0">Knowledge Graph</h1>
+        <h1 className="font-bold text-2xl truncate flex-1 min-w-0">PaperMind</h1>
       </div>
 
       <SearchAndTagFilter
@@ -66,9 +67,9 @@ export const Sidebar = ({ items, onItemClick, width }: SidebarProps) => {
       />
 
       <div className="flex-1 overflow-hidden">
-        {/* <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
-          {filteredItems.length > 0 ? '最近更新' : '无匹配结果'}
-        </h2> */}
+        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 my-2">
+          {filteredItems.length > 0 ? '最新' : '无匹配结果'}
+        </h2>
         <ScrollArea className="h-[calc(100vh-180px)]" key={filteredItems.length}>
           {filteredItems.length > 0 ? (
             filteredItems.map((item) => (
@@ -78,7 +79,9 @@ export const Sidebar = ({ items, onItemClick, width }: SidebarProps) => {
                 type={item.type}
                 title={item.title}
                 tags={item.tags}
+                updatedAt={item.updatedAt}
                 onClick={() => onItemClick({ id: item.id, type: item.type } as Node)}
+                onUpdate={onUpdate}
               />
             ))
           ) : (

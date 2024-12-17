@@ -134,13 +134,13 @@ export const NoteCreator = ({ paperId, availableTags: initialTags, redirectToNot
         <Button
           variant="ghost"
           size="sm"
-          className="text-sm text-blue-500 hover:text-blue-600"
+          className="text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-500"
         >
           <PlusIcon className="size-4" />
           添加笔记
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="border-emerald-600/10 dark:border-emerald-400/10">
         <DialogHeader>
           <DialogTitle className="mb-2">创建新笔记</DialogTitle>
         </DialogHeader>
@@ -193,6 +193,7 @@ export const NoteCreator = ({ paperId, availableTags: initialTags, redirectToNot
                 disabled={form.formState.isSubmitting}
                 variant="secondary"
                 size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-500 dark:hover:bg-emerald-600"
               >
                 创建
               </Button>
@@ -200,6 +201,7 @@ export const NoteCreator = ({ paperId, availableTags: initialTags, redirectToNot
                 onClick={() => setIsNoteDialogOpen(false)}
                 variant="ghost"
                 size="sm"
+                className="hover:bg-emerald-50 dark:hover:bg-emerald-950"
               >
                 取消
               </Button>

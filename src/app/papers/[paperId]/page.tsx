@@ -13,6 +13,7 @@ import { TagComponent } from '@/components/Tag';
 import { TagCreator } from '@/components/TagCreator';
 import { toast } from 'sonner';
 import { debounce } from 'lodash';
+import { ContentListItem } from '@/components/ContentListItem';
 
 export default function PaperPage() {
     const { paperId } = useParams();
@@ -150,7 +151,7 @@ export default function PaperPage() {
                     <div className="h-full overflow-y-auto pr-2 space-y-4">
                         {/* 论文标签 - 只在未选中笔记时显示 */}
                         {!selectedNote && (
-                            <Card className="p-4">
+                            <Card className="p-6">
                                 <div className="flex items-center justify-between">
                                     <h2 className="text-lg font-semibold whitespace-nowrap">标签</h2>
                                     <div className="w-[120px]">
@@ -261,39 +262,16 @@ export default function PaperPage() {
                                         <div className="space-y-2">
                                             {relatedNotes && relatedNotes.length > 0 ? (
                                                 relatedNotes.map((note) => (
-                                                    <div
+                                                    <ContentListItem
                                                         key={note.id}
+                                                        id={note.id}
+                                                        type="note"
+                                                        title={note.name}
+                                                        tags={note.tags.map(({ tag }) => tag)}
+                                                        updatedAt={note.updatedAt}
                                                         onClick={() => handleNoteClick(note)}
-                                                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer group"
-                                                    >
-                                                        <div className="flex items-center gap-2 w-full min-w-0">
-                                                            <span className="text-gray-500 dark:text-gray-400">📄</span>
-                                                            <span className="text-sm truncate min-w-0 flex-1 text-emerald-600 dark:text-emerald-400">
-                                                                {note.name}
-                                                            </span>
-                                                        </div>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 line-clamp-2">
-                                                            {note.content}
-                                                        </p>
-                                                        {note.tags && note.tags.length > 0 && (
-                                                            <div className="flex gap-1.5 flex-wrap mt-1.5">
-                                                                {note.tags.slice(0, 3).map(({ tag }) => (
-                                                                    <TagComponent
-                                                                        key={tag.id}
-                                                                        id={tag.id}
-                                                                        name={tag.name}
-                                                                        size="sm"
-                                                                        showActions={false}
-                                                                    />
-                                                                ))}
-                                                                {note.tags.length > 3 && (
-                                                                    <span className="text-xs text-gray-400 dark:text-gray-500">
-                                                                        +{note.tags.length - 3}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                        onUpdate={debouncedFetchRelatedContent}
+                                                    />
                                                 ))
                                             ) : (
                                                 <p className="text-gray-500 dark:text-gray-400 text-center py-4">
@@ -311,36 +289,16 @@ export default function PaperPage() {
                                         <div className="space-y-2">
                                             {relatedPapers.length > 0 ? (
                                                 relatedPapers.map((relatedPaper) => (
-                                                    <div
+                                                    <ContentListItem
                                                         key={relatedPaper.id}
+                                                        id={relatedPaper.id}
+                                                        type="paper"
+                                                        title={relatedPaper.name}
+                                                        tags={relatedPaper.tags.map(({ tag }) => tag)}
+                                                        updatedAt={relatedPaper.updatedAt}
                                                         onClick={() => router.push(`/papers/${relatedPaper.id}`)}
-                                                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer group"
-                                                    >
-                                                        <div className="flex items-center gap-2 w-full min-w-0">
-                                                            <span className="text-gray-500 dark:text-gray-400">📄</span>
-                                                            <span className="text-sm truncate min-w-0 flex-1 text-blue-600 dark:text-blue-400">
-                                                                {relatedPaper.name}
-                                                            </span>
-                                                        </div>
-                                                        {relatedPaper.tags && relatedPaper.tags.length > 0 && (
-                                                            <div className="flex gap-1.5 flex-wrap mt-1.5">
-                                                                {relatedPaper.tags.slice(0, 3).map(({ tag }) => (
-                                                                    <TagComponent
-                                                                        key={tag.id}
-                                                                        id={tag.id}
-                                                                        name={tag.name}
-                                                                        size="sm"
-                                                                        showActions={false}
-                                                                    />
-                                                                ))}
-                                                                {relatedPaper.tags.length > 3 && (
-                                                                    <span className="text-xs text-gray-400 dark:text-gray-500">
-                                                                        +{relatedPaper.tags.length - 3}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                        onUpdate={debouncedFetchRelatedContent}
+                                                    />
                                                 ))
                                             ) : (
                                                 <p className="text-gray-500 dark:text-gray-400 text-center py-4">

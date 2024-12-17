@@ -54,6 +54,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",
+    "date-fns": "^4.1.0",
     "install": "^0.13.0",
     "katex": "^0.16.15",
     "lodash": "^4.17.21",

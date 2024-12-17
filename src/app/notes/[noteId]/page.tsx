@@ -9,6 +9,7 @@ import { TagComponent } from '@/components/Tag';
 import { TagCreator } from '@/components/TagCreator';
 import { toast } from 'sonner';
 import { Paper, Tag, Note } from '@prisma/client';
+import { ContentListItem } from '@/components/ContentListItem';
 
 
 export default function NotePage() {
@@ -136,7 +137,7 @@ export default function NotePage() {
                     {/* 右侧信息面板 */}
                     <div className="h-full overflow-y-auto pr-2 space-y-4">
                         {/* 笔记标签卡片 */}
-                        <Card className="p-4">
+                        <Card className="p-6">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-lg font-semibold whitespace-nowrap">标签</h2>
                                 <div className="w-[120px]">
@@ -190,36 +191,16 @@ export default function NotePage() {
                             <div className="space-y-2">
                                 {relatedPapers.length > 0 ? (
                                     relatedPapers.map((paper) => (
-                                        <div
+                                        <ContentListItem
                                             key={paper.id}
+                                            id={paper.id}
+                                            type="paper"
+                                            title={paper.name}
+                                            tags={paper.tags.map(({ tag }) => tag)}
+                                            updatedAt={paper.updatedAt}
                                             onClick={() => router.push(`/papers/${paper.id}`)}
-                                            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer group"
-                                        >
-                                            <div className="flex items-center gap-2 w-full min-w-0">
-                                                <span className="text-gray-500">📄</span>
-                                                <span className="text-sm text-blue-600 truncate min-w-0 flex-1">
-                                                    {paper.name}
-                                                </span>
-                                            </div>
-                                            {paper.tags && paper.tags.length > 0 && (
-                                                <div className="flex gap-1.5 flex-wrap mt-1.5">
-                                                    {paper.tags.slice(0, 3).map(({ tag }) => (
-                                                        <TagComponent
-                                                            key={tag.id}
-                                                            id={tag.id}
-                                                            name={tag.name}
-                                                            size="sm"
-                                                            showActions={false}
-                                                        />
-                                                    ))}
-                                                    {paper.tags.length > 3 && (
-                                                        <span className="text-xs text-gray-400 dark:text-gray-500">
-                                                            +{paper.tags.length - 3}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
+                                            onUpdate={fetchRelatedContent}
+                                        />
                                     ))
                                 ) : (
                                     <p className="text-gray-500 text-center py-4">
@@ -235,39 +216,16 @@ export default function NotePage() {
                             <div className="space-y-2">
                                 {relatedNotes.length > 0 ? (
                                     relatedNotes.map((relatedNote) => (
-                                        <div
+                                        <ContentListItem
                                             key={relatedNote.id}
+                                            id={relatedNote.id}
+                                            type="note"
+                                            title={relatedNote.name}
+                                            tags={relatedNote.tags.map(({ tag }) => tag)}
+                                            updatedAt={relatedNote.updatedAt}
                                             onClick={() => router.push(`/notes/${relatedNote.id}`)}
-                                            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer group"
-                                        >
-                                            <div className="flex items-center gap-2 w-full min-w-0">
-                                                <span className="text-gray-500">📝</span>
-                                                <span className="text-sm text-emerald-600 truncate min-w-0 flex-1">
-                                                    {relatedNote.name}
-                                                </span>
-                                            </div>
-                                            <p className="text-xs text-gray-500 mt-1.5 line-clamp-2">
-                                                {relatedNote.content}
-                                            </p>
-                                            {relatedNote.tags && relatedNote.tags.length > 0 && (
-                                                <div className="flex gap-1.5 flex-wrap mt-1.5">
-                                                    {relatedNote.tags.slice(0, 3).map(({ tag }) => (
-                                                        <TagComponent
-                                                            key={tag.id}
-                                                            id={tag.id}
-                                                            name={tag.name}
-                                                            size="sm"
-                                                            showActions={false}
-                                                        />
-                                                    ))}
-                                                    {relatedNote.tags.length > 3 && (
-                                                        <span className="text-xs text-gray-400 dark:text-gray-500">
-                                                            +{relatedNote.tags.length - 3}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
+                                            onUpdate={fetchRelatedContent}
+                                        />
                                     ))
                                 ) : (
                                     <p className="text-gray-500 text-center py-4">
