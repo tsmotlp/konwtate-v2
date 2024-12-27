@@ -3,8 +3,8 @@
 import { useEditorStore } from "@/hooks/use-editor-store";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon, BoldIcon, ChevronDownIcon, HighlighterIcon, ImageIcon, ItalicIcon, Link2Icon, LinkIcon, ListCollapseIcon, ListIcon, ListOrderedIcon, ListTodoIcon, LucideIcon, MessageSquareIcon, MinusIcon, PlusIcon, PrinterIcon, Redo2Icon, RedoIcon, RemoveFormattingIcon, SearchIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon, UploadIcon } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon, BoldIcon, ChevronDownIcon, HighlighterIcon, ImageIcon, ItalicIcon, Link2Icon, LinkIcon, ListCollapseIcon, ListIcon, ListOrderedIcon, ListTodoIcon, LucideIcon, MessageSquareIcon, MinusIcon, PlusIcon, PrinterIcon, Redo2Icon, RedoIcon, RemoveFormattingIcon, SearchIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon, UploadIcon, TableIcon, Trash2Icon } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { type Level } from "@tiptap/extension-heading"
 import { type ColorResult, SketchPicker } from "react-color"
 import { useState, memo, useEffect } from "react";
@@ -12,6 +12,148 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DialogFooter, DialogHeader, DialogContent, DialogTitle, Dialog } from "@/components/ui/dialog";
 import { MathInputDialog } from '@/components/math-input-dialog'
+import { Label } from "@/components/ui/label";
+
+const TableButton = () => {
+    const { editor } = useEditorStore();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [rows, setRows] = useState(3);
+    const [cols, setCols] = useState(3);
+
+    if (!editor) return null;
+
+    const handleTableOperations = {
+        insertTable: () => {
+            editor.chain().focus().insertTable({
+                rows,
+                cols,
+                withHeaderRow: true  // 添加表头行
+            }).run();
+            setIsDialogOpen(false);
+        },
+        addColumnBefore: () => editor.chain().focus().addColumnBefore().run(),
+        addColumnAfter: () => editor.chain().focus().addColumnAfter().run(),
+        deleteColumn: () => editor.chain().focus().deleteColumn().run(),
+        addRowBefore: () => editor.chain().focus().addRowBefore().run(),
+        addRowAfter: () => editor.chain().focus().addRowAfter().run(),
+        deleteRow: () => editor.chain().focus().deleteRow().run(),
+        deleteTable: () => editor.chain().focus().deleteTable().run(),
+        mergeCells: () => editor.chain().focus().mergeCells().run(),
+        splitCell: () => editor.chain().focus().splitCell().run(),
+        toggleHeaderColumn: () => editor.chain().focus().toggleHeaderColumn().run(),
+        toggleHeaderRow: () => editor.chain().focus().toggleHeaderRow().run(),
+        toggleHeaderCell: () => editor.chain().focus().toggleHeaderCell().run(),
+    };
+
+    return (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <button className="h-7 min-w-7 shrink-0 flex items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm">
+                        <TableIcon className="size-4" />
+                    </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => setIsDialogOpen(true)}>
+                        <PlusIcon className="size-4 mr-2" />
+                        <span>插入表格</span>
+                    </DropdownMenuItem>
+
+                    {editor.isActive('table') && (
+                        <>
+                            <DropdownMenuSeparator />
+
+                            {/* 行操作 */}
+                            <DropdownMenuItem onClick={handleTableOperations.addRowBefore}>
+                                <span>在上方插入行</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleTableOperations.addRowAfter}>
+                                <span>在下方插入行</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleTableOperations.deleteRow}>
+                                <span>删除行</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            {/* 列操作 */}
+                            <DropdownMenuItem onClick={handleTableOperations.addColumnBefore}>
+                                <span>在左侧插入列</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleTableOperations.addColumnAfter}>
+                                <span>在右侧插入列</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleTableOperations.deleteColumn}>
+                                <span>删除列</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            {/* 单元格操作 */}
+                            <DropdownMenuItem onClick={handleTableOperations.mergeCells}>
+                                <span>合并单元格</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleTableOperations.splitCell}>
+                                <span>拆分单元格</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            {/* 表头操作 */}
+                            <DropdownMenuItem onClick={handleTableOperations.toggleHeaderRow}>
+                                <span>切换表头行</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleTableOperations.toggleHeaderColumn}>
+                                <span>切换表头列</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            {/* 删除表格 */}
+                            <DropdownMenuItem onClick={handleTableOperations.deleteTable}>
+                                <Trash2Icon className="size-4 mr-2" />
+                                <span>删除表格</span>
+                            </DropdownMenuItem>
+                        </>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>插入表格</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>行数</Label>
+                            <Input
+                                type="number"
+                                min={1}
+                                max={10}
+                                value={rows}
+                                onChange={(e) => setRows(parseInt(e.target.value) || 1)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>列数</Label>
+                            <Input
+                                type="number"
+                                min={1}
+                                max={10}
+                                value={cols}
+                                onChange={(e) => setCols(parseInt(e.target.value) || 1)}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={handleTableOperations.insertTable}>插入</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
+    );
+};
 
 const LineHeightButton = () => {
     const { editor } = useEditorStore();
@@ -1047,6 +1189,7 @@ export const Toolbar = () => {
                     <HighlightColorButton />
                     <LinkButton />
                     <ImageButton />
+                    <TableButton />
                     <AlignButton />
                     <LineHeightButton />
                     <ListButton />

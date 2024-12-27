@@ -25,7 +25,7 @@
     --ring: 262.1 83.3% 57.8%;
     --radius: 0.5rem;
   }
- 
+
   .dark {
     --background: 224 71.4% 4.1%;
     --foreground: 210 20% 98%;
@@ -51,28 +51,74 @@
 
 /* Editor Styles */
 .tiptap {
+  :first-child {
+    margin-top: 0;
+  }
+
   width: 100%;
   color: rgb(55, 65, 81);
   font-size: 16px;
   line-height: 1.75;
-  
+
   /* Base Typography */
-  p, h1, h2, h3, h4, h5, h6, ul, ol, pre, blockquote, .tableWrapper, img, .math-node {
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  ul,
+  ol,
+  pre,
+  blockquote,
+  .tableWrapper,
+  img,
+  .math-node {
     margin: 0;
     line-height: inherit;
-    
+
     &:not(:empty) {
       margin: 1.25rem 0;
     }
   }
 
   /* Headings */
-  h1 { font-size: 2em; font-weight: 600; }
-  h2 { font-size: 1.5em; font-weight: 600; }
-  h3 { font-size: 1.25em; font-weight: 600; }
-  h4 { font-size: 1em; font-weight: 600; }
-  h5 { font-size: 0.875em; font-weight: 600; }
-  h6 { font-size: 0.85em; font-weight: 600; }
+  h1 {
+    font-size: 2em;
+    font-weight: 600;
+  }
+
+  h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+  }
+
+  h3 {
+    font-size: 1.25em;
+    font-weight: 600;
+  }
+
+  h4 {
+    font-size: 1em;
+    font-weight: 600;
+  }
+
+  h5 {
+    font-size: 0.875em;
+    font-weight: 600;
+  }
+
+  h6 {
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+
+  blockquote {
+    border-left: 3px solid #6f42c1;
+    margin: 1.5rem 0;
+    padding-left: 1rem;
+  }
 
   /* List styles */
   ul,
@@ -134,7 +180,7 @@
   a {
     color: #2563eb;
     text-decoration: underline;
-    
+
     &:hover {
       color: #1d4ed8;
     }
@@ -152,7 +198,7 @@
     font-family: 'JetBrainsMono', monospace;
     font-size: 0.9rem;
     line-height: 1.5;
-    
+
     code {
       background: none;
       color: inherit;
@@ -232,46 +278,261 @@
     }
   }
 
-  /* Tables */
+  /* Table-specific styling */
+  table {
+    border-collapse: collapse;
+    margin: 0;
+    overflow: hidden;
+    table-layout: fixed;
+    width: 100%;
+    
+    td,
+    th {
+      border: 1px solid black;
+      box-sizing: border-box;
+      min-width: 1em;
+      padding: 0 12px;
+      position: relative;
+      vertical-align: top;
+      word-break: break-word;
+      max-width: 300px;
+
+      >* {
+        margin-bottom: 0;
+      }
+    }
+
+    th {
+      background-color: #f3f4f6;
+      font-weight: 600;
+      text-align: left;
+      border-bottom: 2px solid #9ca3af;
+    }
+
+    .selectedCell:after {
+      background: rgba(0, 123, 255, 0.3);
+      content: "";
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      pointer-events: none;
+      position: absolute;
+      z-index: 2;
+    }
+
+    .column-resize-handle {
+      background-color: var(--primary);
+      width: 3px;
+      opacity: 0;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
   .tableWrapper {
+    margin: 1.5rem 0;
     overflow-x: auto;
-    background: white;
-    border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th, td {
-      border: 1px solid #e5e7eb;
-      padding: 0.75rem;
-      min-width: 100px;
-    }
+  &.resize-cursor {
+    cursor: ew-resize;
+    cursor: col-resize;
   }
 
   /* Math Formulas */
+  .math-display-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin: 1.5rem 0;
+    padding: 0.5rem 0;
+  }
+
+  .math-display-wrapper::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .math-display-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 8px;
+  }
+
+  .math-display-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0);
+    border-radius: 8px;
+  }
+
+  .math-display-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
   .math-node {
     font-family: KaTeX_Main, 'Times New Roman', serif;
     min-width: 1em;
-    
-    &.math-display {
-      display: block;
-      text-align: center;
-      margin: 1.5rem 0;
-      padding: 0.5rem;
-    }
-    
-    &.math-inline {
-      display: inline-block;
-      vertical-align: middle;
-      margin: 0 0.2rem;
-    }
-
-    &.ProseMirror-selectednode {
-      outline: 2px solid #4dabf7;
-      background: rgba(77, 171, 247, 0.1);
-    }
   }
+
+  .math-node.math-display {
+    display: block;
+    text-align: center;
+  }
+
+  .math-node.math-inline {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 0.2rem;
+  }
+
+  .math-render-container {
+    display: inline-block;
+    max-width: fit-content;
+    position: relative !important;
+    padding-right: 3em !important;
+  }
+
+  /* 确保 KaTeX 渲染的内容样式正确 */
+  .katex-display {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .katex {
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  &.ProseMirror-selectednode {
+    outline: 2px solid #4dabf7;
+  }
+
+  /* 隐藏编辑器右侧滚动条 */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 添加对齐环境的特殊处理 */
+  .katex-display>.katex {
+    /* 确保有足够空间显示等式编号 */
+    padding-right: 3em !important;
+    /* 使用相对定位作为编号的参考点 */
+    position: relative !important;
+  }
+
+  /* 处理等式编号的位置 */
+  .katex-display>.katex>.katex-html {
+    position: relative !important;
+    width: 100% !important;
+  }
+
+  /* 调整等式编号容器的位置 */
+  .katex-display>.katex>.katex-html>.tag {
+    position: absolute !important;
+    right: -3em !important;
+    width: 3em !important;
+    text-align: right !important;
+  }
+
+  /* 确保公式主体不会与编号重叠 */
+  .katex-display>.katex>.katex-html>.base {
+    margin-right: 0 !important;
+    width: 100% !important;
+  }
+
+  /* 确保滚动时编号保持在右侧 */
+  .math-render-container {
+    display: inline-block;
+    max-width: fit-content;
+    position: relative !important;
+    padding-right: 3em !important;
+  }
+}
+
+/* 为预览对话框中的数学公式添加样式 */
+.preview-math {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding: 0.5rem 0;
+
+  /* 滚动条样式 */
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  /* 确保 KaTeX 显示正确 */
+  .katex-display {
+    margin: 0;
+  }
+}
+
+/* 移除外层容器的滚动 */
+.math-display-wrapper .preview-math {
+  overflow: visible;
+}
+
+/* 更新滚动条样式 */
+.math-display-wrapper::-webkit-scrollbar,
+.preview-math::-webkit-scrollbar {
+  height: 8px;
+}
+
+.math-display-wrapper::-webkit-scrollbar-track,
+.preview-math::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.math-display-wrapper::-webkit-scrollbar-thumb,
+.preview-math::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.math-display-wrapper::-webkit-scrollbar-thumb:hover,
+.preview-math::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* 暗色模式下的滚动条 */
+.dark .math-display-wrapper::-webkit-scrollbar-thumb,
+.dark .preview-math::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark .math-display-wrapper::-webkit-scrollbar-thumb:hover,
+.dark .preview-math::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 隐藏编辑器容器的滚动条 */
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* 预览对话框中的数学公式样式 */
+.preview-math .katex-display {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 隐藏预览中的公式编号 */
+.preview-math .katex-display>.katex>.katex-html>.tag {
+  display: none !important;
 }

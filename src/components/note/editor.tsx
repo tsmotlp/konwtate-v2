@@ -67,7 +67,7 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
     const debouncedSave = useCallback(
         debounce(async (content: string) => {
             if (!noteId) return;
-    
+
             try {
                 const response = await fetch(`/api/notes/${noteId}`, {
                     method: 'PATCH',
@@ -76,7 +76,7 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
                     },
                     body: JSON.stringify({ content }),
                 });
-    
+
                 if (!response.ok) {
                     throw new Error('保存失败');
                 }
@@ -89,6 +89,7 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
     );
 
     const editor = useEditor({
+        autofocus: true,
         onCreate({ editor }) {
             setEditor(editor)
         },
@@ -134,6 +135,7 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
             }),
             Table.configure({
                 resizable: true,
+                allowTableNodeSelection: true,
             }),
             TableRow,
             TableHeader,

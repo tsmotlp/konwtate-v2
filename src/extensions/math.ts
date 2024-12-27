@@ -79,18 +79,30 @@ export const Mathematics = Node.create({
 
             const tag = node.attrs.displayMode ? 'div' : 'span'
             const attrs = mergeAttributes({
-                class: `Tiptap-mathematics-render ${node.attrs.displayMode ? 'math-display' : 'math-inline'}`,
+                class: `math-node ${node.attrs.displayMode ? 'math-display' : 'math-inline'}`,
                 'data-type': node.attrs.displayMode ? 'math-display' : 'math-inline',
                 'data-text': node.attrs.text,
                 'data-display': node.attrs.displayMode.toString(),
             })
+
+            if (node.attrs.displayMode) {
+                return [
+                    'div',
+                    { class: 'math-display-wrapper' },
+                    [
+                        tag,
+                        attrs,
+                        ['div', { class: 'math-render-container' }, renderedKatex]
+                    ]
+                ]
+            }
 
             return [tag, attrs, renderedKatex]
         } catch (error) {
             console.error('Math rendering error:', error)
             const tag = node.attrs.displayMode ? 'div' : 'span'
             return [tag, mergeAttributes({
-                class: `Tiptap-mathematics-render math-error`,
+                class: `math-node math-error`,
                 'data-type': node.attrs.displayMode ? 'math-display' : 'math-inline',
                 'data-text': node.attrs.text,
                 'data-display': node.attrs.displayMode.toString(),
@@ -123,10 +135,16 @@ export const Mathematics = Node.create({
 
     addNodeView() {
         return ({ node, editor, getPos }) => {
-            const dom = document.createElement(node.attrs.displayMode ? 'div' : 'span')
-            dom.classList.add('Tiptap-mathematics-render')
-            dom.classList.add('Tiptap-mathematics-render--editable')
-            dom.setAttribute('data-type', node.attrs.displayMode ? 'display' : 'inline')
+            const dom = document.createElement('div')
+            dom.classList.add('math-display-wrapper')
+
+            const mathContainer = document.createElement(node.attrs.displayMode ? 'div' : 'span')
+            mathContainer.classList.add('math-node')
+            mathContainer.classList.add(node.attrs.displayMode ? 'math-display' : 'math-inline')
+            mathContainer.setAttribute('data-type', node.attrs.displayMode ? 'display' : 'inline')
+
+            const renderContainer = document.createElement('div')
+            renderContainer.classList.add('math-render-container')
 
             const renderMath = () => {
                 try {
@@ -134,15 +152,22 @@ export const Mathematics = Node.create({
                         displayMode: node.attrs.displayMode,
                         throwOnError: false,
                     })
-                    dom.innerHTML = rendered
+                    renderContainer.innerHTML = rendered
                 } catch (error) {
                     console.error('Math rendering error:', error)
-                    dom.classList.add('math-error')
-                    dom.textContent = node.attrs.text || ''
+                    mathContainer.classList.add('math-error')
+                    renderContainer.textContent = node.attrs.text || ''
                 }
             }
 
             renderMath()
+
+            if (node.attrs.displayMode) {
+                mathContainer.appendChild(renderContainer)
+                dom.appendChild(mathContainer)
+            } else {
+                dom.appendChild(renderContainer)
+            }
 
             dom.addEventListener('dblclick', () => {
                 if (typeof getPos === 'function') {

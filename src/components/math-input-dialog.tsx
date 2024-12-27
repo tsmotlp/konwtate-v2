@@ -45,6 +45,9 @@ export function MathInputDialog({
             const rendered = katex.renderToString(value, {
                 displayMode,
                 throwOnError: false,
+                fleqn: true,
+                leqno: false,
+                strict: false
             })
             setPreview(rendered)
             setError("")
@@ -85,16 +88,16 @@ export function MathInputDialog({
                         {error ? (
                             <div className="text-red-500 text-sm">{error}</div>
                         ) : (
-                            <div className="overflow-x-auto custom-scrollbar">
-                                <div className={cn(
-                                    "min-w-full w-fit",
-                                    displayMode ? "flex justify-center" : ""
-                                )}>
-                                    <div
-                                        dangerouslySetInnerHTML={{ __html: preview }}
-                                        className="preview-math"
-                                    />
-                                </div>
+                            <div className={cn(
+                                displayMode ? "flex justify-center" : ""
+                            )}>
+                                <div
+                                    dangerouslySetInnerHTML={{ __html: preview }}
+                                    className={cn(
+                                        "preview-math",
+                                        displayMode ? "w-full" : "inline-block"
+                                    )}
+                                />
                             </div>
                         )}
                     </div>
