@@ -71,6 +71,7 @@
     "react-dropzone": "^14.3.5",
     "react-force-graph-2d": "^1.26.1",
     "react-hook-form": "^7.54.0",
+    "react-icons": "^5.4.0",
     "react-intersection-observer": "^9.13.1",
     "react-pdf": "^9.1.1",
     "sonner": "^1.7.1",

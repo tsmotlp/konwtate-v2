@@ -4,6 +4,8 @@ import { Tag } from '@prisma/client';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { Button } from "@/components/ui/button";
+import { SiGoogledocs } from "react-icons/si";
+import { FaFilePdf } from "react-icons/fa";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -104,7 +106,11 @@ export const ContentListItem = ({
         >
             <div className="flex items-center gap-2 w-full min-w-0">
                 <div className="flex-1 flex items-center gap-2 min-w-0 cursor-pointer" onClick={onClick}>
-                    <span>{type === 'paper' ? '📄' : '📝'}</span>
+                    {type === 'paper' ? (
+                        <FaFilePdf className='fill-red-600 size-4' />
+                    ) : (
+                        <SiGoogledocs className='fill-blue-500 size-4' />
+                    )}
                     <span className={`text-sm truncate min-w-0 flex-1 ${type === 'paper'
                         ? 'text-blue-600 dark:text-blue-400'
                         : 'text-emerald-600 dark:text-emerald-400'
@@ -141,25 +147,27 @@ export const ContentListItem = ({
                 </DropdownMenu>
             </div>
 
-            {tags && tags.length > 0 && (
-                <div className="flex gap-1.5 flex-wrap mt-1.5">
-                    {tags.slice(0, 3).map((tag) => (
-                        <TagComponent
-                            key={tag.id}
-                            id={tag.id}
-                            name={tag.name}
-                            size="sm"
-                            showActions={false}
-                            allowRename={false}
-                        />
-                    ))}
-                    {tags.length > 3 && (
-                        <span className="text-xs text-gray-400 dark:text-gray-500">
-                            +{tags.length - 3}
-                        </span>
-                    )}
-                </div>
-            )}
+            {
+                tags && tags.length > 0 && (
+                    <div className="flex gap-1.5 flex-wrap mt-1.5">
+                        {tags.slice(0, 3).map((tag) => (
+                            <TagComponent
+                                key={tag.id}
+                                id={tag.id}
+                                name={tag.name}
+                                size="sm"
+                                showActions={false}
+                                allowRename={false}
+                            />
+                        ))}
+                        {tags.length > 3 && (
+                            <span className="text-xs text-gray-400 dark:text-gray-500">
+                                +{tags.length - 3}
+                            </span>
+                        )}
+                    </div>
+                )
+            }
             <div className="text-sm text-gray-400 dark:text-gray-500 mt-2">
                 {formatDistanceToNow(updatedAt, { addSuffix: true, locale: zhCN })}
             </div>
@@ -214,6 +222,6 @@ export const ContentListItem = ({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </div >
     );
 };
