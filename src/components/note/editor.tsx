@@ -34,15 +34,22 @@ import { toast } from 'sonner'
 import { useParams } from 'next/navigation'
 import { MathInputDialog } from '../math-input-dialog'
 
+
+import css from 'highlight.js/lib/languages/css'
+import js from 'highlight.js/lib/languages/javascript'
+import ts from 'highlight.js/lib/languages/typescript'
+import html from 'highlight.js/lib/languages/xml'
+import python from 'highlight.js/lib/languages/python'
 // create a lowlight instance with all languages loaded
 const lowlight = createLowlight(all)
 
-// // This is only an example, all supported languages are already loaded above
-// // but you can also register only specific languages to reduce bundle-size
-// lowlight.register('html', html)
-// lowlight.register('css', css)
-// lowlight.register('js', js)
-// lowlight.register('ts', ts)
+// This is only an example, all supported languages are already loaded above
+// but you can also register only specific languages to reduce bundle-size
+lowlight.register('html', html)
+lowlight.register('css', css)
+lowlight.register('js', js)
+lowlight.register('ts', ts)
+lowlight.register('python', python)
 
 interface NoteEditorProps {
     initialContent?: string;  // 添加初始内容属性
@@ -57,11 +64,10 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
     // 使用 prop 中的 noteId，如果没有则使用 URL 参数中的
     const noteId = propNoteId || params.noteId
 
-    // 创建防抖的保存函数
     const debouncedSave = useCallback(
         debounce(async (content: string) => {
-            if (!noteId) return; // 如果没有 noteId，不执行保存
-
+            if (!noteId) return;
+    
             try {
                 const response = await fetch(`/api/notes/${noteId}`, {
                     method: 'PATCH',
@@ -69,20 +75,18 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ content }),
-                })
-
+                });
+    
                 if (!response.ok) {
-                    throw new Error('保存失败')
+                    throw new Error('保存失败');
                 }
-
-                toast.success('已保存')
             } catch (error) {
-                console.error('保存笔记失败:', error)
-                toast.error('保存失败')
+                console.error('保存笔记失败:', error);
+                toast.error('保存失败');
             }
         }, 1000),
         [noteId]
-    )
+    );
 
     const editor = useEditor({
         onCreate({ editor }) {
@@ -114,6 +118,9 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
                 style: 'padding: 1rem 1rem; min-height: 100%;',
             },
         },
+        parseOptions: {
+            preserveWhitespace: false,
+        },
         extensions: [
             FontSizeExtension,
             LineHeightExtension.configure({
@@ -131,8 +138,16 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
             TableRow,
             TableHeader,
             TableCell,
-            Image,
-            ImageResizer,
+            Image.configure({
+                inline: true,
+                allowBase64: true,
+                HTMLAttributes: {
+                    class: 'editor-image',
+                },
+            }),
+            ImageResizer.configure({
+                allowBase64: true,
+            }),
             CodeBlockLowlight.configure({
                 lowlight,
             }),
@@ -146,7 +161,7 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
                 types: ['heading', 'paragraph'],
             }),
             Link.configure({
-                openOnClick: false,
+                openOnClick: true,
                 autolink: true,
                 defaultProtocol: 'https',
                 protocols: ['http', 'https'],

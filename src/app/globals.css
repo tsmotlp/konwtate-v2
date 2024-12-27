@@ -2,91 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-
-html,
-body,
-:root {
-  height: 100%;
-}
-
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --foreground: 224 71.4% 4.1%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 224 71.4% 4.1%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 262.1 83.3% 57.8%;
     --radius: 0.5rem;
   }
-
+ 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 263.4 70% 50.4%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 263.4 70% 50.4%;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
-
+/* Editor Styles */
 .tiptap {
   width: 100%;
-
-  >* {
-    width: 100%;
+  color: rgb(55, 65, 81);
+  font-size: 16px;
+  line-height: 1.75;
+  
+  /* Base Typography */
+  p, h1, h2, h3, h4, h5, h6, ul, ol, pre, blockquote, .tableWrapper, img, .math-node {
+    margin: 0;
+    line-height: inherit;
+    
+    &:not(:empty) {
+      margin: 1.25rem 0;
+    }
   }
+
+  /* Headings */
+  h1 { font-size: 2em; font-weight: 600; }
+  h2 { font-size: 1.5em; font-weight: 600; }
+  h3 { font-size: 1.25em; font-weight: 600; }
+  h4 { font-size: 1em; font-weight: 600; }
+  h5 { font-size: 0.875em; font-weight: 600; }
+  h6 { font-size: 0.85em; font-weight: 600; }
 
   /* List styles */
   ul,
@@ -144,864 +130,148 @@ body {
   }
 
 
-  /* Heading styles */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    line-height: 1.1;
-    margin-top: 2.5rem;
-    text-wrap: pretty;
-  }
-
-  h1,
-  h2 {
-    margin-top: 3.5rem;
-    margin-bottom: 1.5rem;
-  }
-
-  h1 {
-    font-size: 1.4rem;
-  }
-
-  h2 {
-    font-size: 1.2rem;
-  }
-
-  h3 {
-    font-size: 1.1rem;
-  }
-
-  h4,
-  h5,
-  h6 {
-    font-size: 1rem;
-  }
-
-
-  /* Table-specific styling */
-  table {
-    border-collapse: collapse;
-    margin: 0;
-    overflow: hidden;
-    table-layout: fixed;
-    width: 100%;
-
-    td,
-    th {
-      border: 1px solid black;
-      box-sizing: border-box;
-      min-width: 1em;
-      padding: 6px 8px;
-      position: relative;
-      vertical-align: top;
-
-      >* {
-        margin-bottom: 0;
-      }
-    }
-
-    th {
-      background-color: #C7C7C7;
-      font-weight: bold;
-      text-align: left;
-    }
-
-    .selectedCell:after {
-      background: #959596;
-      content: "";
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      pointer-events: none;
-      position: absolute;
-      z-index: 2;
-    }
-
-    .column-resize-handle {
-      background-color: var(--primary);
-      bottom: -2px;
-      pointer-events: none;
-      position: absolute;
-      right: -2px;
-      top: 0;
-      width: 4px;
+  /* Links */
+  a {
+    color: #2563eb;
+    text-decoration: underline;
+    
+    &:hover {
+      color: #1d4ed8;
     }
   }
 
-  /* Table wrapper styles */
-  .tableWrapper {
-    margin: 1.5rem 0;
-    overflow-x: auto;
-  }
-
-  &.resize-cursor {
-    cursor: ew-resize;
-    cursor: col-resize;
-  }
-
-  /* Image styles */
-  img {
-    display: block;
-    height: auto;
-    margin: 1.5rem 0;
-    max-width: 100%;
-
-    &.ProseMirror-selectednode {
-      outline: 3px solid var(--primary);
-    }
-  }
-
-  /* Code block styles */
+  /* Code Blocks */
   pre {
-    background: var(--black);
+    background: #f6f8fa;
+    color: #24292e;
+    border: 1px solid #e1e4e8;
     border-radius: 0.5rem;
-    color: var(--white);
+    padding: 1rem;
+    margin: 1.25rem 0;
+    overflow-x: auto;
     font-family: 'JetBrainsMono', monospace;
-    margin: 1.5rem 0;
-    padding: 0.75rem 1rem;
-
+    font-size: 0.9rem;
+    line-height: 1.5;
+    
     code {
       background: none;
       color: inherit;
-      font-size: 0.8rem;
       padding: 0;
+      font-size: inherit;
     }
 
-    /* Code styling */
+    /* Syntax Highlighting */
     .hljs-comment,
     .hljs-quote {
-      color: #616161;
-    }
-
-    .hljs-variable,
-    .hljs-template-variable,
-    .hljs-attribute,
-    .hljs-tag,
-    .hljs-regexp,
-    .hljs-link,
-    .hljs-name,
-    .hljs-selector-id,
-    .hljs-selector-class {
-      color: #f98181;
-    }
-
-    .hljs-number,
-    .hljs-meta,
-    .hljs-built_in,
-    .hljs-builtin-name,
-    .hljs-literal,
-    .hljs-type,
-    .hljs-params {
-      color: #fbbc88;
-    }
-
-    .hljs-string,
-    .hljs-symbol,
-    .hljs-bullet {
-      color: #b9f18d;
-    }
-
-    .hljs-title,
-    .hljs-section {
-      color: #faf594;
+      color: #6a737d;
     }
 
     .hljs-keyword,
-    .hljs-selector-tag {
-      color: #70cff8;
+    .hljs-selector-tag,
+    .hljs-deletion {
+      color: #d73a49;
     }
 
-    .hljs-emphasis {
-      font-style: italic;
+    .hljs-number,
+    .hljs-symbol,
+    .hljs-bullet,
+    .hljs-link {
+      color: #005cc5;
     }
 
-    .hljs-strong {
-      font-weight: 700;
-    }
-  }
-
-  /* Blockquote styles */
-  blockquote {
-    border-left: 3px solid var(--primary);
-    margin: 1.5rem 0;
-    padding-left: 1rem;
-  }
-
-  hr {
-    border: none;
-    border-top: 1px solid #959596;
-    margin: 2rem 0;
-  }
-
-  /* Mathematics extension styles */
-  .Tiptap-mathematics-render {
-    /* 基础样式 */
-    user-select: text;
-    cursor: text;
-    transition: background-color 0.2s ease;
-
-    /* 行内公式样式 */
-    &[data-type="inline"] {
-      display: inline-block;
-      padding: 0 0.2rem;
-      margin: 0;
-      min-height: 1em;
-      vertical-align: middle;
-
-      .katex {
-        font-size: 1em;
-      }
+    .hljs-string,
+    .hljs-doctag,
+    .hljs-formula {
+      color: #032f62;
     }
 
-    /* 行间公式样式 */
-    &[data-type="display"] {
-      display: block;
-      padding: 1rem;
-      margin: 1rem 0;
-      text-align: center;
-      min-height: 2em;
-      overflow-x: auto;
-      max-width: 100%;
-
-      &::-webkit-scrollbar {
-        height: 4px;
-      }
-
-      &::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      &::-webkit-scrollbar-thumb {
-        background-color: rgba(0, 0, 0, 0.2);
-        border-radius: 2px;
-      }
-
-      .katex {
-        font-size: 1.2em;
-      }
-
-      .katex-display {
-        margin: 0;
-        overflow-x: auto;
-        overflow-y: hidden;
-        max-width: 100%;
-        padding: 0.5em 0;
-        transform-origin: left center;
-        transition: transform 0.2s ease;
-      }
+    .hljs-title,
+    .hljs-section,
+    .hljs-selector-id {
+      color: #6f42c1;
     }
 
-    /* 编辑状态样式 */
-    &--editable {
-      position: relative;
+    .hljs-class .hljs-title,
+    .hljs-type,
+    .hljs-template-variable,
+    .hljs-attribute {
+      color: #e36209;
+    }
 
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-      }
+    .hljs-variable,
+    .hljs-template-variable {
+      color: #24292e;
+    }
+
+    .hljs-built_in,
+    .hljs-builtin-name {
+      color: #005cc5;
     }
   }
 
-  /* KaTeX 样式优化 */
-  .katex {
-    text-rendering: optimizeLegibility;
-    line-height: 1.2;
+  /* Inline Code */
+  code {
+    background: #f6f8fa;
+    color: #24292e;
+    padding: 0.2em 0.4em;
+    border: 1px solid #e1e4e8;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+    font-family: 'Consolas', monospace;
   }
 
-  .katex-display {
-    overflow: auto hidden;
-    -webkit-overflow-scrolling: touch;
-    padding: 0.5em 0;
-  }
-
-  /* 暗色模式适配 */
-  .dark & {
-    .Tiptap-mathematics-render {
-      &--editable:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-      }
-    }
-
-    .Tiptap-mathematics-editor {
-      background: #2d2d2d;
-      border-color: #444;
-      color: #fff;
-    }
-  }
-
-  /* 编辑器样式 */
-  .Tiptap-mathematics-editor {
-    width: 100%;
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 0.5rem;
+  /* Images */
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
     margin: 0.5rem 0;
-    font-family: monospace;
-    font-size: 0.9em;
 
-    &[data-type="display"] {
-      margin: 1rem 0;
+    &.ProseMirror-selectednode {
+      outline: 2px solid #4dabf7;
     }
   }
 
-  /* font-family */
-  html {
-    --title-font-family: 'Helvetica', sans-serif;
-  }
-
-  /* Link styles */
-  a {
-    @apply text-blue-600;
-    cursor: pointer;
-
-    &:hover {
-      @apply underline;
-    }
-  }
-
-  /* 添加以下样式 */
-  p {
-    margin: 1.25rem 0;
-    line-height: 1.75;
-  }
-
-  /* 优化代码块显示 */
-  pre {
-    margin: 1.5rem 0;
-    padding: 1rem;
-    border-radius: 0.375rem;
-    background: #1e1e1e;
-    overflow-x: auto;
-  }
-
-  /* 优化表格显示 */
+  /* Tables */
   .tableWrapper {
-    margin: 1.5rem 0;
     overflow-x: auto;
     background: white;
-    border-radius: 0.375rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
 
-  /* 添加内容块间距，改善滚动体验 */
-  &>*+* {
-    margin-top: 1.5em;
-  }
-
-  /* 确保第一个元素没有顶部边距 */
-  &>*:first-child {
-    margin-top: 0;
-  }
-
-  /* 确保最后一个元素有足够的底部边距 */
-  &>*:last-child {
-    margin-bottom: 2rem;
-  }
-
-  /* 优化大型内容块的间距 */
-  &>h1,
-  &>h2 {
-    margin-top: 3rem;
-    margin-bottom: 1.5rem;
-  }
-
-  &>h3,
-  &>h4,
-  &>h5,
-  &>h6 {
-    margin-top: 2.5rem;
-    margin-bottom: 1rem;
-  }
-
-  &>p {
-    margin-top: 1.25rem;
-    margin-bottom: 1.25rem;
-    line-height: 1.75;
-  }
-
-  /* 列表间距优化 */
-  &>ul,
-  &>ol {
-    margin-top: 1.25rem;
-    margin-bottom: 1.25rem;
-    padding-left: 1.5rem;
-  }
-}
-
-/* 修改自定义滚动条样式 */
-.custom-scrollbar {
-  /* 平滑滚动 */
-  scroll-behavior: smooth;
-
-  /* 仅在内容超出时显示滚动条 */
-  overflow-y: overlay;
-
-  /* 滚动条样式 */
-  &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-    background-color: transparent;
-  }
-
-  /* 滚动条轨道 */
-  &::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 4px;
-  }
-
-  /* 滚动条滑块 */
-  &::-webkit-scrollbar-thumb {
-    background-color: rgba(209, 213, 219, 0);
-    border-radius: 4px;
-    transition: background-color 0.2s;
-  }
-
-  /* 仅在悬停和滚动时显示滚动条 */
-  &:hover::-webkit-scrollbar-thumb,
-  &:active::-webkit-scrollbar-thumb {
-    background-color: rgba(209, 213, 219, 0.8);
-
-    &:hover {
-      background-color: rgba(156, 163, 175, 0.8);
-    }
-  }
-
-  /* 深色模式滚动条 */
-  @media (prefers-color-scheme: dark) {
-
-    &:hover::-webkit-scrollbar-thumb,
-    &:active::-webkit-scrollbar-thumb {
-      background-color: rgba(75, 85, 99, 0.8);
-
-      &:hover {
-        background-color: rgba(107, 114, 128, 0.8);
-      }
-    }
-  }
-
-  /* Firefox 滚动条样式 */
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-
-  &:hover {
-    scrollbar-color: rgba(209, 213, 219, 0.8) transparent;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    &:hover {
-      scrollbar-color: rgba(75, 85, 99, 0.8) transparent;
-    }
-  }
-}
-
-/* 数学公式基础样式 */
-.math-node {
-  cursor: pointer;
-  min-width: 1em;
-  min-height: 1em;
-  padding: 0.2em;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  font-family: KaTeX_Main, 'Times New Roman', serif;
-  position: relative;
-}
-
-/* 行内和行间公式样式 */
-.math-node.math-inline {
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.math-node.math-display {
-  display: block;
-  text-align: center;
-  margin: 1em 0;
-  padding: 0.5em;
-}
-
-/* 空节点提示 */
-.math-node:empty::before {
-  content: "双击编辑公式";
-  color: #999;
-  font-style: italic;
-}
-
-/* 错误状态 */
-.math-node.math-error {
-  color: #cc0000;
-  border-color: #cc0000;
-  background-color: rgba(255, 0, 0, 0.1);
-}
-
-/* 编辑器样式 */
-.math-editor {
-  width: 100%;
-  min-height: 2em;
-  padding: 0.5em;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-family: monospace;
-  background: white;
-  resize: vertical;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.math-editor.math-display {
-  min-height: 4em;
-}
-
-/* 选中状态 */
-.math-node.ProseMirror-selectednode {
-  outline: 2px solid #4dabf7;
-}
-
-/* KaTeX 样式优化 */
-.katex {
-  text-rendering: optimizeLegibility;
-  font-size: 1.1em;
-  line-height: 1.2;
-}
-
-.math-node.math-display .katex {
-  font-size: 1.2em;
-}
-
-.math-node.math-inline .katex {
-  font-size: 1em;
-}
-
-/* 暗色模式适配 */
-.dark .math-editor {
-  background: #1a1a1a;
-  border-color: #333;
-  color: #fff;
-}
-
-.dark .math-node.ProseMirror-selectednode {
-  outline-color: #228be6;
-}
-
-.Tiptap-mathematics-render {
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.Tiptap-mathematics-render:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.dark .Tiptap-mathematics-render:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-/* 添加 Firefox 滚动条样式 */
-.Tiptap-mathematics-render[data-type="display"] {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-}
-
-.dark .Tiptap-mathematics-render[data-type="display"] {
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-}
-
-/* KaTeX 公式编号样式优化 */
-.Tiptap-mathematics-render[data-type="display"] {
-  /* 容器设置 */
-  position: relative;
-  width: 100%;
-  overflow-x: auto;
-  padding: 1rem;
-  margin: 1rem 0;
-
-  /* 隐藏外层滚动条 */
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-
-  .katex-display {
-    /* 使用 flex 布局 */
-    display: flex !important;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0;
-    width: max-content;
-    /* 允许容器根据内容扩展 */
-    min-width: 100%;
-  }
-
-  .katex-html {
-    /* 移除内部滚动 */
-    overflow: visible;
-    display: flex;
-    align-items: center;
-    width: auto;
-  }
-
-  /* 编号样式 */
-  .katex-html>.tag {
-    position: static !important;
-    float: none !important;
-    margin-left: 2em;
-    padding-left: 1em;
-    flex-shrink: 0;
-    order: 2;
-    /* 确保编号在最右侧 */
-  }
-
-  /* 公式主体 */
-  .katex-html>.base {
-    width: auto;
-    order: 1;
-  }
-}
-
-/* 暗色模式适配 */
-.dark .Tiptap-mathematics-render[data-type="display"] {
-  .katex-html>.tag {
-    color: rgba(255, 255, 255, 0.9);
-  }
-}
-
-/* 移除多余的滚动条样式 */
-.Tiptap-mathematics-render[data-type="display"] .katex-html::-webkit-scrollbar {
-  display: none;
-}
-
-/* 数学公式对话框样式 */
-.preview-container {
-  /* 预览容器样式 */
-  overflow-x: auto;
-  max-width: 100%;
-  padding: 0.5rem 0;
-
-  /* 滚动条样式 */
-  &::-webkit-scrollbar {
-    height: 4px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 2px;
-  }
-
-  /* KaTeX 预览样式 */
-  .katex-display {
-    margin: 0;
-    overflow-x: visible;
-    overflow-y: hidden;
-    max-width: none;
-  }
-
-  .katex {
-    text-rendering: optimizeLegibility;
-    white-space: nowrap;
-  }
-}
-
-/* 暗色模式适配 */
-.dark .preview-container::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* 文本输入框样式优化 */
-.font-mono {
-  font-family: 'JetBrainsMono', monospace;
-  line-height: 1.5;
-  tab-size: 4;
-}
-
-/* 数学公式对话框样式 */
-.preview-math {
-  .katex-display {
-    /* 使用 flex 布局 */
-    display: flex !important;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0;
-    width: max-content;
-    min-width: 100%;
-  }
-
-  .katex-html {
-    /* 移除内部滚动 */
-    overflow: visible;
-    display: flex;
-    align-items: center;
-    width: auto;
-  }
-
-  /* 编号样式 */
-  .katex-html>.tag {
-    position: static !important;
-    float: none !important;
-    margin-left: 2em;
-    padding-left: 1em;
-    flex-shrink: 0;
-    order: 2;
-  }
-
-  /* 公式主体 */
-  .katex-html>.base {
-    width: auto;
-    order: 1;
-  }
-}
-
-/* 自定义滚动条样式 */
-.custom-scrollbar {
-  /* 平滑滚动 */
-  scroll-behavior: smooth;
-
-  /* 仅在内容超出时显示滚动条 */
-  overflow-y: overlay;
-
-  /* 滚动条样式 */
-  &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-    background-color: transparent;
-  }
-
-  /* 滚动条轨道 */
-  &::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 4px;
-  }
-
-  /* 滚动条滑块 */
-  &::-webkit-scrollbar-thumb {
-    background-color: rgba(209, 213, 219, 0);
-    border-radius: 4px;
-    transition: background-color 0.2s;
-  }
-
-  /* 仅在悬停和滚动时显示滚动条 */
-  &:hover::-webkit-scrollbar-thumb,
-  &:active::-webkit-scrollbar-thumb {
-    background-color: rgba(209, 213, 219, 0.8);
-
-    &:hover {
-      background-color: rgba(156, 163, 175, 0.8);
-    }
-  }
-}
-
-/* 深色模式滚动条 */
-.dark .custom-scrollbar {
-
-  &:hover::-webkit-scrollbar-thumb,
-  &:active::-webkit-scrollbar-thumb {
-    background-color: rgba(75, 85, 99, 0.8);
-
-    &:hover {
-      background-color: rgba(107, 114, 128, 0.8);
-    }
-  }
-}
-
-/* 修改行间公式的样式 */
-.Tiptap-mathematics-render {
-  &[data-type="display"] {
-    /* 基础容器设置 */
-    width: 100%;
-    margin: 1rem 0;
-    padding: 0;
-
-    /* 使用grid布局实现居中 */
-    display: grid;
-    justify-content: center;
-
-    /* 内部滚动容器 */
-    .katex-display {
-      display: inline-block !important;
-      /* 改用inline-block */
-      margin: 0;
-      padding: 0;
-      overflow-x: auto;
-      max-width: 100%;
-
-      /* 滚动条样式 */
-      &::-webkit-scrollbar {
-        height: 4px;
-      }
-
-      &::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      &::-webkit-scrollbar-thumb {
-        background-color: rgba(0, 0, 0, 0.2);
-        border-radius: 2px;
-      }
-    }
-
-    .katex-html {
-      padding: 1rem 2rem;
-      /* 给公式内容添加内边距 */
-      text-align: center;
-      min-width: min-content;
-      /* 确保内容不会被压缩 */
-    }
-
-    /* 确保公式内容不会被压缩 */
-    .katex {
-      display: inline-block;
-      white-space: nowrap;
-      text-align: center;
-    }
-  }
-}
-
-/* 编辑器中的行间公式容器样式 */
-.tiptap {
-  .ProseMirror {
-    div[data-type="math-display"] {
+    table {
       width: 100%;
-      margin: 1em 0;
-      display: grid;
-      /* 使用grid布局 */
-      justify-content: center;
+      border-collapse: collapse;
+    }
 
-      /* 滚动条样式 */
-      .katex-display {
-        overflow-x: auto;
-        max-width: 100%;
-
-        &::-webkit-scrollbar {
-          height: 4px;
-        }
-
-        &::-webkit-scrollbar-track {
-          background: transparent;
-        }
-
-        &::-webkit-scrollbar-thumb {
-          background-color: rgba(0, 0, 0, 0.2);
-          border-radius: 2px;
-        }
-      }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 0.75rem;
+      min-width: 100px;
     }
   }
-}
 
-/* 暗色模式滚动条 */
-.dark {
+  /* Math Formulas */
+  .math-node {
+    font-family: KaTeX_Main, 'Times New Roman', serif;
+    min-width: 1em;
+    
+    &.math-display {
+      display: block;
+      text-align: center;
+      margin: 1.5rem 0;
+      padding: 0.5rem;
+    }
+    
+    &.math-inline {
+      display: inline-block;
+      vertical-align: middle;
+      margin: 0 0.2rem;
+    }
 
-  .Tiptap-mathematics-render[data-type="display"],
-  .ProseMirror div[data-type="math-display"] {
-    .katex-display::-webkit-scrollbar-thumb {
-      background-color: rgba(255, 255, 255, 0.2);
+    &.ProseMirror-selectednode {
+      outline: 2px solid #4dabf7;
+      background: rgba(77, 171, 247, 0.1);
     }
   }
 }

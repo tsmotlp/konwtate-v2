@@ -264,21 +264,47 @@ const ImageButton = () => {
         const input = document.createElement("input");
         input.type = "file";
         input.accept = "image/*";
-        input.onchange = (e) => {
+        input.onchange = async (e) => {
             const file = (e.target as HTMLInputElement).files?.[0];
             if (file) {
-                const imgUrl = URL.createObjectURL(file);
-                onChange(imgUrl);
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const base64Data = reader.result as string;
+                    onChange(base64Data);
+                };
+                reader.readAsDataURL(file);
             }
         }
         input.click();
     }
 
-    const handleImageUrlSubmit = () => {
+    const convertUrlToBase64 = async (url: string): Promise<string> => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch (error) {
+            console.error('Error converting image to base64:', error);
+            throw error;
+        }
+    };
+
+    const handleImageUrlSubmit = async () => {
         if (imageUrl) {
-            onChange(imageUrl);
-            setImageUrl("");
-            setIsDialogOpen(false);
+            try {
+                const base64Data = await convertUrlToBase64(imageUrl);
+                onChange(base64Data);
+                setImageUrl("");
+                setIsDialogOpen(false);
+            } catch (error) {
+                console.error('Failed to load image:', error);
+                // Add error handling UI here
+            }
         }
     }
 
@@ -412,15 +438,6 @@ const PRESET_COLORS = {
 
         { value: "#BFBFBF", id: "gray-6" },
         { value: "#3F3F3F", id: "gray-7" },
-        { value: "#938953", id: "tan-2" },
-        { value: "#548DD4", id: "blue-4" },
-        { value: "#95B3D7", id: "blue-5" },
-        { value: "#D99694", id: "red-3" },
-        { value: "#C3D69B", id: "green-3" },
-        { value: "#B2A2C7", id: "purple-3" },
-        { value: "#92CDDC", id: "cyan-3" },
-        { value: "#FAC08F", id: "orange-3" },
-
         { value: "#A5A5A5", id: "gray-8" },
         { value: "#262626", id: "gray-9" },
         { value: "#494429", id: "tan-3" },
@@ -991,53 +1008,57 @@ export const Toolbar = () => {
 
     return (
         <div className={cn(
-            "max-w-5xl mx-auto w-full",
+            "w-full flex justify-center",
             "dark:bg-gray-800 dark:border-gray-700"
         )}>
             <div className={cn(
                 "bg-[#F1F4F9] dark:bg-gray-900",
-                "px-2.5 py-0.5 rounded-[24px]",
-                "min-h-[40px] flex items-center justify-start gap-x-0.5",
-                "overflow-x-auto custom-scrollbar"
+                "px-2 py-0.5",
+                "min-h-[40px] flex items-center justify-center",
+                "flex-wrap",
+                "overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent",
+                "py-1",
+                "max-w-[1000px] w-full"
             )}>
-                {sections[0].map((item) => (
-                    <ToolbarButton
-                        key={item.label}
-                        onClick={item.onClick}
-                        icon={item.icon}
-                    />
-                ))}
-                <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-                <FontFamilyButton />
-                <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-                <HeadingLevelButton />
-                <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-                <FontSizeButton />
-                <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-                {sections[1].map((item) => (
-                    <ToolbarButton
-                        key={item.label}
-                        onClick={item.onClick}
-                        icon={item.icon}
-                    />
-                ))}
+                <div className="flex items-center gap-x-0.5 flex-shrink-0">
+                    {sections[0].slice(0, 2).map((item) => (
+                        <ToolbarButton
+                            key={item.label}
+                            onClick={item.onClick}
+                            icon={item.icon}
+                        />
+                    ))}
+                    <Separator orientation="vertical" className="h-6 bg-neutral-300" />
+                    <HeadingLevelButton />
+                    <FontFamilyButton />
+                    <FontSizeButton />
+                    {sections[1].map((item) => (
+                        <ToolbarButton
+                            key={item.label}
+                            onClick={item.onClick}
+                            icon={item.icon}
+                        />
+                    ))}
+                </div>
 
-                <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-                <TextColorButton />
-                <HighlightColorButton />
-                <LinkButton />
-                <ImageButton />
-                <AlignButton />
-                <LineHeightButton />
-                <ListButton />
-                <MathButton />
-                {sections[2].map((item) => (
-                    <ToolbarButton
-                        key={item.label}
-                        onClick={item.onClick}
-                        icon={item.icon}
-                    />
-                ))}
+                <div className="flex items-center gap-x-0.5 flex-wrap">
+                    <Separator orientation="vertical" className="h-6 bg-neutral-300" />
+                    <TextColorButton />
+                    <HighlightColorButton />
+                    <LinkButton />
+                    <ImageButton />
+                    <AlignButton />
+                    <LineHeightButton />
+                    <ListButton />
+                    <MathButton />
+                    {sections[2].map((item) => (
+                        <ToolbarButton
+                            key={item.label}
+                            onClick={item.onClick}
+                            icon={item.icon}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     )
