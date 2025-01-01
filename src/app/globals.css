@@ -601,3 +601,33 @@
 .preview-math .katex-display>.katex>.katex-html>.tag {
   display: none !important;
 }
+
+/* 工具栏按钮统一样式 */
+.toolbar-button {
+  height: 28px;
+  min-width: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border-radius: 3px;
+  color: #4b5563;
+  background: transparent;
+  transition: all 0.2s;
+}
+
+.toolbar-button svg {
+  width: 16px;
+  /* 统一图标大小 */
+  height: 16px;
+  stroke-width: 2px;
+  /* 统一线条粗细 */
+}
+
+.toolbar-button:hover {
+  background-color: #f3f4f6;
+}
+
+.toolbar-button.active {
+  background-color: #e5e7eb;
+}
