@@ -43,7 +43,9 @@ export const Mathematics = Node.create({
 
     group: 'inline',
     inline: true,
-    atom: true,
+    atom: false,
+    selectable: true,
+    draggable: true,
 
     parseHTML() {
         return [
@@ -64,6 +66,7 @@ export const Mathematics = Node.create({
                     return {
                         text: node.getAttribute('data-text') || '',
                         displayMode: true,
+                        atom: true,
                     }
                 },
             },
@@ -77,36 +80,33 @@ export const Mathematics = Node.create({
                 throwOnError: false,
             })
 
-            const tag = node.attrs.displayMode ? 'div' : 'span'
-            const attrs = mergeAttributes({
-                class: `math-node ${node.attrs.displayMode ? 'math-display' : 'math-inline'}`,
-                'data-type': node.attrs.displayMode ? 'math-display' : 'math-inline',
-                'data-text': node.attrs.text,
-                'data-display': node.attrs.displayMode.toString(),
-            })
-
             if (node.attrs.displayMode) {
-                return [
-                    'div',
-                    { class: 'math-display-wrapper' },
-                    [
-                        tag,
-                        attrs,
-                        ['div', { class: 'math-render-container' }, renderedKatex]
-                    ]
-                ]
+                return ['div', {
+                    class: 'math-display-wrapper',
+                    'data-type': 'math-display',
+                    'data-text': node.attrs.text,
+                    'data-display': 'true',
+                }, ['div', {
+                    class: 'math-node math-display'
+                }, ['div', {
+                    class: 'katex-display'
+                }, renderedKatex]]]
             }
 
-            return [tag, attrs, renderedKatex]
+            return ['span', {
+                class: 'math-node math-inline',
+                'data-type': 'math-inline',
+                'data-text': node.attrs.text,
+                'data-display': 'false',
+            }, renderedKatex]
         } catch (error) {
             console.error('Math rendering error:', error)
-            const tag = node.attrs.displayMode ? 'div' : 'span'
-            return [tag, mergeAttributes({
-                class: `math-node math-error`,
+            return [node.attrs.displayMode ? 'div' : 'span', {
+                class: `math-node math-error ${node.attrs.displayMode ? 'math-display' : 'math-inline'}`,
                 'data-type': node.attrs.displayMode ? 'math-display' : 'math-inline',
                 'data-text': node.attrs.text,
                 'data-display': node.attrs.displayMode.toString(),
-            }), node.attrs.text || '']
+            }, node.attrs.text]
         }
     },
 
@@ -135,16 +135,14 @@ export const Mathematics = Node.create({
 
     addNodeView() {
         return ({ node, editor, getPos }) => {
-            const dom = document.createElement('div')
-            dom.classList.add('math-display-wrapper')
-
-            const mathContainer = document.createElement(node.attrs.displayMode ? 'div' : 'span')
-            mathContainer.classList.add('math-node')
-            mathContainer.classList.add(node.attrs.displayMode ? 'math-display' : 'math-inline')
-            mathContainer.setAttribute('data-type', node.attrs.displayMode ? 'display' : 'inline')
-
-            const renderContainer = document.createElement('div')
-            renderContainer.classList.add('math-render-container')
+            const dom = document.createElement(node.attrs.displayMode ? 'div' : 'span')
+            dom.classList.add('math-node')
+            dom.classList.add(node.attrs.displayMode ? 'math-display' : 'math-inline')
+            if (node.attrs.displayMode) {
+                dom.classList.add('math-display-wrapper')
+            }
+            dom.setAttribute('data-type', node.attrs.displayMode ? 'math-display' : 'math-inline')
+            dom.setAttribute('data-display', node.attrs.displayMode.toString())
 
             const renderMath = () => {
                 try {
@@ -152,22 +150,15 @@ export const Mathematics = Node.create({
                         displayMode: node.attrs.displayMode,
                         throwOnError: false,
                     })
-                    renderContainer.innerHTML = rendered
+                    dom.innerHTML = rendered
                 } catch (error) {
                     console.error('Math rendering error:', error)
-                    mathContainer.classList.add('math-error')
-                    renderContainer.textContent = node.attrs.text || ''
+                    dom.classList.add('math-error')
+                    dom.textContent = node.attrs.text || ''
                 }
             }
 
             renderMath()
-
-            if (node.attrs.displayMode) {
-                mathContainer.appendChild(renderContainer)
-                dom.appendChild(mathContainer)
-            } else {
-                dom.appendChild(renderContainer)
-            }
 
             dom.addEventListener('dblclick', () => {
                 if (typeof getPos === 'function') {

@@ -65,10 +65,13 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
     const noteId = propNoteId || params.noteId
 
     const debouncedSave = useCallback(
-        debounce(async (content: string) => {
+        debounce(async (editor: any) => {
             if (!noteId) return;
 
             try {
+                // 使用 editor.getJSON() 替代 getHTML()
+                const content = editor.getJSON()
+
                 const response = await fetch(`/api/notes/${noteId}`, {
                     method: 'PATCH',
                     headers: {
@@ -98,8 +101,7 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
         },
         onUpdate({ editor }) {
             setEditor(editor)
-            const content = editor.getHTML()
-            debouncedSave(content)
+            debouncedSave(editor)
         },
         onSelectionUpdate({ editor }) {
             setEditor(editor)
@@ -120,7 +122,7 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
             },
         },
         parseOptions: {
-            preserveWhitespace: false,
+            preserveWhitespace: "full",
         },
         extensions: [
             FontSizeExtension,
@@ -128,7 +130,13 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
                 types: ['paragraph', 'heading'],
                 defaultLineHeight: 'normal',
             }),
-            StarterKit,
+            StarterKit.configure({
+                paragraph: {
+                    HTMLAttributes: {
+                        class: 'my-paragraph',
+                    },
+                },
+            }),
             TaskList,
             TaskItem.configure({
                 nested: true,
@@ -245,11 +253,12 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
                     const note = await response.json()
 
                     if (note.content) {
+                        // 使用 setContent 时指定 JSON 类型
                         editor.commands.setContent(note.content)
                     }
                 } catch (error) {
-                    console.error('获取笔记内容失败:', error)
-                    toast.error('加载笔记内容失败')
+                    console.error('获取笔记失败:', error)
+                    toast.error('获取笔记失败')
                 }
             }
             fetchNote()

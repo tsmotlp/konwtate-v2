@@ -127,7 +127,7 @@ export default function NotePage() {
                         <Toolbar />
                         <div className="flex-1 w-full">
                             <NoteEditor
-                                initialContent={note.content || ''}
+                                initialContent={note.content ? JSON.parse(note.content) : ''}
                                 noteId={note.id}
                                 containerHeight="calc(100vh - 136px)"
                             />

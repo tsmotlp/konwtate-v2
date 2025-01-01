@@ -285,7 +285,7 @@
     overflow: hidden;
     table-layout: fixed;
     width: 100%;
-    
+
     td,
     th {
       border: 1px solid black;
@@ -346,11 +346,11 @@
 
   /* Math Formulas */
   .math-display-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    margin: 1.5rem 0;
-    padding: 0.5rem 0;
+    display: block;
+    margin: 1em 0;
+    text-align: center;
+    padding: 0;
+    line-height: normal;
   }
 
   .math-display-wrapper::-webkit-scrollbar {
@@ -379,12 +379,20 @@
   .math-node.math-display {
     display: block;
     text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+
+  .math-node.math-display .katex-display {
+    margin: 0;
+    padding: 0;
+    text-align: center;
   }
 
   .math-node.math-inline {
     display: inline-block;
     vertical-align: middle;
-    margin: 0 0.2rem;
+    margin: 0 0.2em;
   }
 
   .math-render-container {
@@ -401,6 +409,7 @@
   }
 
   .katex {
+    display: inline-block;
     text-align: left;
     white-space: nowrap;
   }

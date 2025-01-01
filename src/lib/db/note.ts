@@ -106,11 +106,11 @@ export async function getAllNotes() {
 // 更新笔记的接口定义
 interface UpdateNoteOptions {
     name?: string;
-    content?: string;
-    addTagIds?: string[];     // 要添加的标签ID数组
-    removeTagIds?: string[];  // 要移除的标签ID数组
-    addPaperIds?: string[];   // 要添加的论文ID数组
-    removePaperIds?: string[]; // 要移除的论文ID数组
+    content?: any;  // 修改为 any 类型以支持 JSON
+    addTagIds?: string[];
+    removeTagIds?: string[];
+    addPaperIds?: string[];
+    removePaperIds?: string[];
 }
 
 // 更新笔记
@@ -124,13 +124,16 @@ export async function updateNote(id: string, options: UpdateNoteOptions) {
         removePaperIds = []
     } = options
 
+    // 序列化 content
+    const serializedContent = content ? JSON.stringify(content) : null
+
     return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // 1. 更新笔记基本信息
         const note = await tx.note.update({
             where: { id },
             data: {
                 name,
-                content
+                content: serializedContent
             }
         })
 
