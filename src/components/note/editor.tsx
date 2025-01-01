@@ -69,15 +69,16 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
             if (!noteId) return;
 
             try {
-                // 使用 editor.getJSON() 替代 getHTML()
                 const content = editor.getJSON()
+                // 确保内容被序列化为字符串
+                const serializedContent = JSON.stringify(content)
 
                 const response = await fetch(`/api/notes/${noteId}`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ content }),
+                    body: JSON.stringify({ content: serializedContent }),
                 });
 
                 if (!response.ok) {
@@ -253,8 +254,14 @@ export const NoteEditor = ({ initialContent, noteId: propNoteId, containerHeight
                     const note = await response.json()
 
                     if (note.content) {
-                        // 使用 setContent 时指定 JSON 类型
-                        editor.commands.setContent(note.content)
+                        try {
+                            // 确保解析存储的 JSON 字符串
+                            const parsedContent = JSON.parse(note.content)
+                            editor.commands.setContent(parsedContent)
+                        } catch (e) {
+                            console.error('解析笔记内容失败:', e)
+                            editor.commands.setContent(note.content)
+                        }
                     }
                 } catch (error) {
                     console.error('获取笔记失败:', error)

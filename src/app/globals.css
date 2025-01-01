@@ -351,6 +351,8 @@
     text-align: center;
     padding: 0;
     line-height: normal;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .math-display-wrapper::-webkit-scrollbar {
@@ -363,8 +365,8 @@
   }
 
   .math-display-wrapper::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0);
-    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
   }
 
   .math-display-wrapper::-webkit-scrollbar-thumb:hover {
@@ -376,6 +378,42 @@
     min-width: 1em;
   }
 
+  /* 行内公式样式 */
+  .math-node.math-inline {
+    display: inline;
+    white-space: nowrap;
+    font-size: 1em;
+  }
+
+  /* KaTeX 容器样式 */
+  .math-node.math-inline .katex {
+    display: inline;
+    font-size: inherit;
+  }
+
+  /* KaTeX HTML 容器 */
+  .math-node.math-inline .katex-html {
+    display: inline;
+  }
+
+  /* KaTeX 基础容器 */
+  .math-node.math-inline .katex .base {
+    display: inline;
+  }
+
+  /* 确保所有 KaTeX 内部元素不影响行高 */
+  .math-node.math-inline .katex .mord,
+  .math-node.math-inline .katex .mbin,
+  .math-node.math-inline .katex .mrel,
+  .math-node.math-inline .katex .mopen,
+  .math-node.math-inline .katex .mclose,
+  .math-node.math-inline .katex .mpunct,
+  .math-node.math-inline .katex .minner {
+    display: inline;
+    vertical-align: baseline;
+  }
+
+  /* 行间公式容器 */
   .math-node.math-display {
     display: block;
     text-align: center;
@@ -383,35 +421,61 @@
     padding: 0;
   }
 
-  .math-node.math-display .katex-display {
-    margin: 0;
-    padding: 0;
-    text-align: center;
-  }
-
-  .math-node.math-inline {
-    display: inline-block;
-    vertical-align: middle;
-    margin: 0 0.2em;
-  }
-
-  .math-render-container {
-    display: inline-block;
-    max-width: fit-content;
-    position: relative !important;
-    padding-right: 3em !important;
-  }
-
-  /* 确保 KaTeX 渲染的内容样式正确 */
+  /* KaTeX 显示容器 */
   .katex-display {
     margin: 0 !important;
     padding: 0 !important;
+    text-align: center;
+    overflow: visible;
   }
 
-  .katex {
-    display: inline-block;
-    text-align: left;
+  /* KaTeX 基础容器 */
+  .katex-display>.katex {
+    display: inline-block !important;
+    text-align: center;
     white-space: nowrap;
+    position: relative;
+    padding-right: 3em;
+  }
+
+  /* KaTeX HTML 容器 */
+  .katex-display>.katex>.katex-html {
+    display: inline-block !important;
+    position: relative;
+  }
+
+  /* 公式主体 */
+  .katex-display>.katex>.katex-html>.base {
+    display: inline-block !important;
+    margin: 0 !important;
+    white-space: nowrap;
+  }
+
+  /* 等式编号容器 */
+  .katex-display>.katex>.katex-html>.tag {
+    position: absolute !important;
+    right: -3em !important;
+    width: 3em !important;
+    text-align: right !important;
+  }
+
+  /* 滚动条样式 */
+  .math-display-wrapper::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .math-display-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 8px;
+  }
+
+  .math-display-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+
+  .math-display-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
   }
 
   &.ProseMirror-selectednode {
@@ -421,42 +485,6 @@
   /* 隐藏编辑器右侧滚动条 */
   &::-webkit-scrollbar {
     display: none;
-  }
-
-  /* 添加对齐环境的特殊处理 */
-  .katex-display>.katex {
-    /* 确保有足够空间显示等式编号 */
-    padding-right: 3em !important;
-    /* 使用相对定位作为编号的参考点 */
-    position: relative !important;
-  }
-
-  /* 处理等式编号的位置 */
-  .katex-display>.katex>.katex-html {
-    position: relative !important;
-    width: 100% !important;
-  }
-
-  /* 调整等式编号容器的位置 */
-  .katex-display>.katex>.katex-html>.tag {
-    position: absolute !important;
-    right: -3em !important;
-    width: 3em !important;
-    text-align: right !important;
-  }
-
-  /* 确保公式主体不会与编号重叠 */
-  .katex-display>.katex>.katex-html>.base {
-    margin-right: 0 !important;
-    width: 100% !important;
-  }
-
-  /* 确保滚动时编号保持在右侧 */
-  .math-render-container {
-    display: inline-block;
-    max-width: fit-content;
-    position: relative !important;
-    padding-right: 3em !important;
   }
 }
 

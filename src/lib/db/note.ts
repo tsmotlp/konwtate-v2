@@ -15,13 +15,16 @@ interface CreateNoteOptions {
 export async function createNote(options: CreateNoteOptions) {
     const { name, content, tagIds = [], paperIds = [] } = options
 
+    // 确保 content 被正确序列化
+    const serializedContent = content ? JSON.stringify(content) : null
+
     try {
         return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             // 1. 创建笔记
             const note = await tx.note.create({
                 data: {
                     name,
-                    content
+                    content: serializedContent
                 }
             })
 

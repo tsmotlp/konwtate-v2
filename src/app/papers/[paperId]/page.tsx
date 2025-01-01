@@ -76,12 +76,25 @@ export default function PaperPage() {
         fetchData();
     }, [paperId, debouncedFetchRelatedContent]);
 
-    const handleNoteClick = (note: Note & {
+    const handleNoteClick = async (note: Note & {
         tags: {
             tag: Tag;
         }[];
     }) => {
-        setSelectedNote(note);
+        try {
+            // 获取完整的笔记内容
+            const response = await fetch(`/api/notes/${note.id}`);
+            const fullNote = await response.json();
+
+            // 设置选中的笔记，使用完整的笔记内容
+            setSelectedNote({
+                ...note,
+                content: fullNote.content
+            });
+        } catch (error) {
+            console.error('获取笔记内容失败:', error);
+            toast.error('获取笔记内容失败');
+        }
     };
 
     const handleRemoveTag = async (tagId: string) => {
@@ -232,11 +245,19 @@ export default function PaperPage() {
                                     <div className="flex-1 flex flex-col">
                                         <Toolbar />
                                         <div className="flex-1 mt-4">
-                                            <NoteEditor
-                                                initialContent={selectedNote.content || ''}
-                                                noteId={selectedNote.id}
-                                                containerHeight="calc(100vh - 224px)"
-                                            />
+                                            {selectedNote && (
+                                                <div className="flex-1 w-full">
+                                                    <NoteEditor
+                                                        initialContent={selectedNote.content ? (
+                                                            typeof selectedNote.content === 'string'
+                                                                ? JSON.parse(selectedNote.content)
+                                                                : selectedNote.content
+                                                        ) : ''}
+                                                        noteId={selectedNote.id}
+                                                        containerHeight="calc(100vh - 224px)"
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
