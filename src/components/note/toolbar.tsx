@@ -3,7 +3,7 @@
 import { useEditorStore } from "@/hooks/use-editor-store";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon, BoldIcon, ChevronDownIcon, HighlighterIcon, ImageIcon, ItalicIcon, Link2Icon, LinkIcon, ListCollapseIcon, ListIcon, ListOrderedIcon, ListTodoIcon, LucideIcon, MessageSquareIcon, MinusIcon, PlusIcon, PrinterIcon, Redo2Icon, RedoIcon, RemoveFormattingIcon, SearchIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon, UploadIcon, TableIcon, Trash2Icon } from "lucide-react";
+import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon, BoldIcon, ChevronDownIcon, HighlighterIcon, ImageIcon, ItalicIcon, Link2Icon, LinkIcon, ListCollapseIcon, ListIcon, ListOrderedIcon, ListTodoIcon, LucideIcon, MessageSquareIcon, MinusIcon, PlusIcon, PrinterIcon, Redo2Icon, RedoIcon, RemoveFormattingIcon, SearchIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon, UploadIcon, TableIcon, Trash2Icon, CodeIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { type Level } from "@tiptap/extension-heading"
 import { type ColorResult, SketchPicker } from "react-color"
@@ -1075,6 +1075,48 @@ const MathButton = () => {
     )
 }
 
+const CodeBlockButton = () => {
+    const { editor } = useEditorStore()
+    const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [language, setLanguage] = useState("plaintext")
+
+    const LANGUAGES = [
+        { label: "Plain Text", value: "plaintext" },
+        { label: "TypeScript", value: "typescript" },
+        { label: "JavaScript", value: "javascript" },
+        { label: "Python", value: "python" },
+        { label: "HTML", value: "html" },
+        { label: "CSS", value: "css" },
+        { label: "JSON", value: "json" },
+        { label: "Markdown", value: "markdown" },
+        { label: "SQL", value: "sql" },
+    ]
+
+    return (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <button className="h-7 min-w-7 shrink-0 flex items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm">
+                        <CodeIcon className="size-4" />
+                    </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    {LANGUAGES.map((lang) => (
+                        <DropdownMenuItem
+                            key={lang.value}
+                            onClick={() => {
+                                editor?.chain().focus().setCodeBlock({ language: lang.value }).run()
+                            }}
+                        >
+                            <span>{lang.label}</span>
+                        </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
+    )
+}
+
 export const Toolbar = () => {
     const { editor } = useEditorStore()
     const sections: {
@@ -1194,6 +1236,7 @@ export const Toolbar = () => {
                     <LineHeightButton />
                     <ListButton />
                     <MathButton />
+                    <CodeBlockButton />
                     {sections[2].map((item) => (
                         <ToolbarButton
                             key={item.label}
