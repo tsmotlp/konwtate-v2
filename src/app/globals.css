@@ -152,7 +152,7 @@
     padding: 0;
 
     li {
-      align-items: flex-start;
+      align-items: center;
       display: flex;
 
       >label {
@@ -174,7 +174,6 @@
       margin: 0;
     }
   }
-
 
   /* Links */
   a {
