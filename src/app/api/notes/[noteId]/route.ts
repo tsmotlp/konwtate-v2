@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getNote, updateNote } from '@/lib/db/note';
+import { getNote, updateNote, deleteNote } from '@/lib/db/note';
 
 export async function GET(
     request: Request,
@@ -45,5 +45,22 @@ export async function PATCH(
     } catch (error) {
         console.error('更新笔记失败:', error);
         return new NextResponse('Internal Server Error', { status: 500 });
+    }
+}
+
+
+export async function DELETE(
+    request: Request,
+    { params }: { params: { noteId: string } }
+) {
+    try {
+        const noteId = params.noteId;
+        await deleteNote(noteId);
+        return NextResponse.json({ message: "Note deleted successfully" });
+    } catch (error) {
+        return NextResponse.json(
+            { error: "Failed to delete note" },
+            { status: 500 }
+        );
     }
 }
