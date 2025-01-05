@@ -127,17 +127,23 @@ export async function updateNote(id: string, options: UpdateNoteOptions) {
         removePaperIds = []
     } = options
 
-    // 序列化 content
-    const serializedContent = content ? JSON.stringify(content) : null
+    // 构建更新数据对象
+    const updateData: any = {};
+
+    // 只在明确提供时才更新相应字段
+    if (name !== undefined) {
+        updateData.name = name;
+    }
+
+    if (content !== undefined) {
+        updateData.content = JSON.stringify(content);
+    }
 
     return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // 1. 更新笔记基本信息
         const note = await tx.note.update({
             where: { id },
-            data: {
-                name,
-                content: serializedContent
-            }
+            data: updateData
         })
 
         // 2. 处理标签关系

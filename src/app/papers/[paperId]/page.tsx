@@ -14,6 +14,14 @@ import { TagCreator } from '@/components/TagCreator';
 import { toast } from 'sonner';
 import { debounce } from 'lodash';
 import { ContentListItem } from '@/components/ContentListItem';
+import { ExternalLink, Undo2, HomeIcon } from 'lucide-react';
+
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+    TooltipProvider
+} from "@/components/ui/tooltip"
 
 export default function PaperPage() {
     const { paperId } = useParams();
@@ -140,200 +148,249 @@ export default function PaperPage() {
     if (!paper) return <div className="container mx-auto p-6">论文未找到</div>;
 
     return (
-        <div className="h-screen flex flex-col overflow-hidden">
-            {/* Navbar */}
-            <div className="sticky top-0 bg-background z-10 px-6 flex items-center justify-between h-16 border-b border-gray-200 dark:border-gray-800">
-                <button onClick={() => router.push('/')} className="text-blue-500 hover:underline">
-                    返回主页面
-                </button>
-                <div className="flex flex-col items-center">
-                    <h1 className="text-lg font-bold">{paper.name}</h1>
+        <TooltipProvider>
+            <div className="h-screen flex flex-col overflow-hidden">
+                {/* Navbar */}
+                <div className="sticky top-0 bg-background z-10 px-6 flex items-center h-16 border-b border-gray-200 dark:border-gray-800">
+                    <div className="flex-shrink-0 w-10">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    onClick={() => router.push('/')}
+                                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                >
+                                    <HomeIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" sideOffset={5}>
+                                返回主页面
+                            </TooltipContent>
+                        </Tooltip>
+                    </div>
+
+                    <div className="flex-1 mx-4 overflow-hidden">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <h1 className="text-lg font-bold truncate text-center block w-full">
+                                    {paper.name}
+                                </h1>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" sideOffset={5}>
+                                {paper.name}
+                            </TooltipContent>
+                        </Tooltip>
+                    </div>
+
+                    <div className="flex-shrink-0 w-32 text-right">
+                        <p className="text-sm text-gray-500">
+                            {new Date(paper.updatedAt).toLocaleDateString('zh-CN')}
+                        </p>
+                    </div>
                 </div>
-                <div className="w-[100px]"></div>
-            </div>
 
-            {/* 主要内容区域 */}
-            <div className="flex-1 px-6 py-4 overflow-hidden">
-                <div className="grid grid-cols-3 gap-6 h-full">
-                    {/* PDF 查看器区域 */}
-                    <Card className="col-span-2 overflow-hidden">
-                        <PDFViewer paper={paper} />
-                    </Card>
+                {/* 主要内容区域 */}
+                <div className="flex-1 px-6 py-4 overflow-hidden">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                        {/* PDF 查看器区域 */}
+                        <Card className="col-span-1 lg:col-span-2 overflow-hidden">
+                            <PDFViewer paper={paper} />
+                        </Card>
 
-                    {/* 右侧面板 - 根据是否选中note显示不同内容 */}
-                    <div className="h-full overflow-y-auto pr-2 space-y-4">
-                        {/* 论文标签 - 只在未选中笔记时显示 */}
-                        {!selectedNote && (
-                            <Card className="p-6">
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-lg font-semibold whitespace-nowrap">标签</h2>
-                                    <div className="w-[120px]">
-                                        <TagCreator
-                                            paperId={paper.id}
-                                            onTagCreated={() => {
-                                                // 添加加载状态
-                                                setLoading(true);
-                                                const fetchData = async () => {
-                                                    try {
-                                                        const response = await fetch(`/api/papers/${paperId}`);
-                                                        if (!response.ok) {
-                                                            throw new Error("获取论文数据失败");
-                                                        }
-                                                        const data = await response.json();
-                                                        setPaper(data);
-                                                        await debouncedFetchRelatedContent();
-                                                    } catch (error) {
-                                                        console.error('获取数据失败:', error);
-                                                        toast.error("更新论文数据失败");
-                                                    } finally {
-                                                        setLoading(false);
-                                                    }
-                                                };
-                                                fetchData();
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex flex-wrap gap-2 mt-4">
-                                    {paper.tags && paper.tags.length > 0 ? (
-                                        paper.tags.map(({ tag }) => (
-                                            <TagComponent
-                                                key={tag.id}
-                                                id={tag.id}
-                                                name={tag.name}
-                                                size="sm"
-                                                showActions={true}
-                                                onRemove={() => handleRemoveTag(tag.id)}
-                                            />
-                                        ))
-                                    ) : (
-                                        <p className="text-gray-500 dark:text-gray-400 text-sm">暂无标签</p>
-                                    )}
-                                </div>
-                            </Card>
-                        )}
-
-                        {selectedNote ? (
-                            // 显示选中的note编辑器
-                            <Card className="h-full">
-                                <div className="h-full flex flex-col p-4">
-                                    <div className="h-16 flex items-center justify-between mb-4">
-                                        {/* 左侧标题 */}
-                                        <h2 className="text-lg font-semibold truncate max-w-[200px]">{selectedNote.name}</h2>
-
-                                        {/* 中间空白区域 */}
-                                        <div className="flex-1"></div>
-
-                                        {/* 右侧按钮组 */}
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => setSelectedNote(null)}
-                                                className="px-3 py-1 text-sm rounded-md bg-gray-100 hover:bg-gray-200 
-                                                         dark:bg-gray-800 dark:hover:bg-gray-700"
-                                            >
-                                                返回相关内容
-                                            </button>
-                                            <button
-                                                onClick={() => router.push(`/notes/${selectedNote.id}`)}
-                                                className="px-3 py-1 text-sm rounded-md bg-blue-500 text-white 
-                                                         hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-                                            >
-                                                打开笔记页面
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="flex-1 flex flex-col">
-                                        <Toolbar />
-                                        <div className="flex-1 mt-4">
-                                            {selectedNote && (
-                                                <div className="flex-1 w-full">
-                                                    <NoteEditor
-                                                        initialContent={selectedNote.content ? (
-                                                            typeof selectedNote.content === 'string'
-                                                                ? JSON.parse(selectedNote.content)
-                                                                : selectedNote.content
-                                                        ) : ''}
-                                                        noteId={selectedNote.id}
-                                                        containerHeight="calc(100vh - 224px)"
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </Card>
-                        ) : (
-                            // 显示原来的相关内容
-                            <>
-                                {/* 相关笔记卡片 */}
-                                <Card>
-                                    <div className="p-6">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h2 className="text-lg font-semibold">相关笔记</h2>
-                                            <NoteCreator
+                        {/* 右侧面板 - 只在大屏幕显示 */}
+                        <div className="hidden lg:block h-full overflow-y-auto pr-2 space-y-4">
+                            {/* 论文标签 - 只在未选中笔记时显示 */}
+                            {!selectedNote && (
+                                <Card className="p-6">
+                                    <div className="flex items-center justify-between">
+                                        <h2 className="text-lg font-semibold whitespace-nowrap">标签</h2>
+                                        <div className="w-[120px]">
+                                            <TagCreator
                                                 paperId={paper.id}
-                                                availableTags={paper.tags?.map(({ tag }) => ({
-                                                    id: tag.id,
-                                                    name: tag.name
-                                                })) || []}
-                                                redirectToNote={false}
-                                                onNoteCreated={debouncedFetchRelatedContent}
+                                                onTagCreated={() => {
+                                                    // 添加加载状态
+                                                    setLoading(true);
+                                                    const fetchData = async () => {
+                                                        try {
+                                                            const response = await fetch(`/api/papers/${paperId}`);
+                                                            if (!response.ok) {
+                                                                throw new Error("获取论文数据失败");
+                                                            }
+                                                            const data = await response.json();
+                                                            setPaper(data);
+                                                            await debouncedFetchRelatedContent();
+                                                        } catch (error) {
+                                                            console.error('获取数据失败:', error);
+                                                            toast.error("更新论文数据失败");
+                                                        } finally {
+                                                            setLoading(false);
+                                                        }
+                                                    };
+                                                    fetchData();
+                                                }}
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            {relatedNotes && relatedNotes.length > 0 ? (
-                                                relatedNotes.map((note) => (
-                                                    <ContentListItem
-                                                        key={note.id}
-                                                        id={note.id}
-                                                        type="note"
-                                                        title={note.name}
-                                                        tags={note.tags.map(({ tag }) => tag)}
-                                                        updatedAt={note.updatedAt}
-                                                        onClick={() => handleNoteClick(note)}
-                                                        onUpdate={debouncedFetchRelatedContent}
-                                                    />
-                                                ))
-                                            ) : (
-                                                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                                                    {paper.tags && paper.tags?.length > 0 ? '暂无相关笔记' : '添加标签以查看相关笔记'}
-                                                </p>
-                                            )}
-                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 mt-4">
+                                        {paper.tags && paper.tags.length > 0 ? (
+                                            paper.tags.map(({ tag }) => (
+                                                <TagComponent
+                                                    key={tag.id}
+                                                    id={tag.id}
+                                                    name={tag.name}
+                                                    size="sm"
+                                                    showActions={true}
+                                                    onRemove={() => handleRemoveTag(tag.id)}
+                                                />
+                                            ))
+                                        ) : (
+                                            <p className="text-gray-500 dark:text-gray-400 text-sm">暂无标签</p>
+                                        )}
                                     </div>
                                 </Card>
+                            )}
 
-                                {/* 相关论文卡片 */}
-                                <Card>
-                                    <div className="p-6">
-                                        <h2 className="text-lg font-semibold mb-4">相关论文</h2>
-                                        <div className="space-y-2">
-                                            {relatedPapers.length > 0 ? (
-                                                relatedPapers.map((relatedPaper) => (
-                                                    <ContentListItem
-                                                        key={relatedPaper.id}
-                                                        id={relatedPaper.id}
-                                                        type="paper"
-                                                        title={relatedPaper.name}
-                                                        tags={relatedPaper.tags.map(({ tag }) => tag)}
-                                                        updatedAt={relatedPaper.updatedAt}
-                                                        onClick={() => router.push(`/papers/${relatedPaper.id}`)}
-                                                        onUpdate={debouncedFetchRelatedContent}
-                                                    />
-                                                ))
-                                            ) : (
-                                                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                                                    {paper.tags && paper.tags?.length > 0 ? '暂无相关论文' : '添加标签以查看相关论文'}
-                                                </p>
-                                            )}
+                            {selectedNote ? (
+                                // 显示选中的note编辑器
+                                <Card className="h-full">
+                                    <div className="h-full flex flex-col p-4">
+                                        <div className="h-16 flex items-center justify-between gap-x-4 px-4">
+                                            <div className="flex items-center gap-4 min-w-0 flex-1">
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <h2 className="text-sm font-medium truncate mr-2">
+                                                            {selectedNote.name}
+                                                        </h2>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="bottom" sideOffset={5}>
+                                                        {selectedNote.name}
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </div>
+
+                                            <div className='flex items-center gap-2'>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <button
+                                                            onClick={() => setSelectedNote(null)}
+                                                            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+                                                        >
+                                                            <Undo2 className="h-4 w-4" />
+                                                        </button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="bottom" sideOffset={5}>
+                                                        返回相关信息
+                                                    </TooltipContent>
+                                                </Tooltip>
+
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <button
+                                                            onClick={() => router.push(`/notes/${selectedNote.id}`)}
+                                                            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+                                                        >
+                                                            <ExternalLink className="h-4 w-4" />
+                                                        </button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="bottom" sideOffset={5}>
+                                                        在笔记页面打开
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </div>
+
+                                        </div>
+                                        <div className="flex-1 flex flex-col">
+                                            <Toolbar defaultVertical={true} />
+                                            <div className="flex-1">
+                                                {selectedNote && (
+                                                    <div className="flex-1 w-full">
+                                                        <NoteEditor
+                                                            initialContent={selectedNote.content ? (
+                                                                typeof selectedNote.content === 'string'
+                                                                    ? JSON.parse(selectedNote.content)
+                                                                    : selectedNote.content
+                                                            ) : ''}
+                                                            noteId={selectedNote.id}
+                                                            containerHeight="calc(100vh - 150px)"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </Card>
-                            </>
-                        )}
+                            ) : (
+                                // 显示原来的相关内容
+                                <>
+                                    {/* 相关笔记卡片 */}
+                                    <Card>
+                                        <div className="p-6">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h2 className="text-lg font-semibold">相关笔记</h2>
+                                                <NoteCreator
+                                                    paperId={paper.id}
+                                                    availableTags={paper.tags?.map(({ tag }) => ({
+                                                        id: tag.id,
+                                                        name: tag.name
+                                                    })) || []}
+                                                    redirectToNote={false}
+                                                    onNoteCreated={debouncedFetchRelatedContent}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                {relatedNotes && relatedNotes.length > 0 ? (
+                                                    relatedNotes.map((note) => (
+                                                        <ContentListItem
+                                                            key={note.id}
+                                                            id={note.id}
+                                                            type="note"
+                                                            title={note.name}
+                                                            tags={note.tags.map(({ tag }) => tag)}
+                                                            updatedAt={note.updatedAt}
+                                                            onClick={() => handleNoteClick(note)}
+                                                            onUpdate={debouncedFetchRelatedContent}
+                                                        />
+                                                    ))
+                                                ) : (
+                                                    <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                                                        {paper.tags && paper.tags?.length > 0 ? '暂无相关笔记' : '添加标签以查看相关笔记'}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Card>
+
+                                    {/* 相关论文卡片 */}
+                                    <Card>
+                                        <div className="p-6">
+                                            <h2 className="text-lg font-semibold mb-4">相关论文</h2>
+                                            <div className="space-y-2">
+                                                {relatedPapers.length > 0 ? (
+                                                    relatedPapers.map((relatedPaper) => (
+                                                        <ContentListItem
+                                                            key={relatedPaper.id}
+                                                            id={relatedPaper.id}
+                                                            type="paper"
+                                                            title={relatedPaper.name}
+                                                            tags={relatedPaper.tags.map(({ tag }) => tag)}
+                                                            updatedAt={relatedPaper.updatedAt}
+                                                            onClick={() => router.push(`/papers/${relatedPaper.id}`)}
+                                                            onUpdate={debouncedFetchRelatedContent}
+                                                        />
+                                                    ))
+                                                ) : (
+                                                    <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                                                        {paper.tags && paper.tags?.length > 0 ? '暂无相关论文' : '添加标签以查看相关论文'}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </TooltipProvider>
     );
 } 

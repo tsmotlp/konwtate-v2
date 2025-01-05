@@ -128,15 +128,27 @@ export async function updatePaper(id: string, options: UpdatePaperOptions) {
         removeNoteIds = []
     } = options
 
+    // 构建更新数据对象
+    const updateData: any = {};
+
+    // 只在明确提供时才更新相应字段
+    if (name !== undefined) {
+        updateData.name = name;
+    }
+
+    if (url !== undefined) {
+        updateData.url = url;
+    }
+
+    if (annotations !== undefined) {
+        updateData.annotations = annotations;
+    }
+
     return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // 1. 更新论文基本信息
         const paper = await tx.paper.update({
             where: { id },
-            data: {
-                name,
-                url,
-                annotations
-            }
+            data: updateData
         })
 
         // 2. 处理标签关系

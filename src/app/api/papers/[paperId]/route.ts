@@ -60,7 +60,7 @@ export async function PATCH(
             // // 获取更新后的论文（包含标签信息）
             // const paperWithTags = await getPaper(paperId);
             // return NextResponse.json(paperWithTags);
-            return NextResponse.json(updatedPaper); 
+            return NextResponse.json(updatedPaper);
         }
 
         // 处理其他字段的更新

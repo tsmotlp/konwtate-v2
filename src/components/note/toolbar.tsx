@@ -3,7 +3,7 @@
 import { useEditorStore } from "@/hooks/use-editor-store";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon, BoldIcon, ChevronDownIcon, HighlighterIcon, ImageIcon, ItalicIcon, Link2Icon, LinkIcon, ListCollapseIcon, ListIcon, ListOrderedIcon, ListTodoIcon, LucideIcon, MessageSquareIcon, MinusIcon, PlusIcon, PrinterIcon, Redo2Icon, RedoIcon, RemoveFormattingIcon, SearchIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon, UploadIcon, TableIcon, Trash2Icon, Sigma, Baseline, Code2Icon } from "lucide-react";
+import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon, BoldIcon, ChevronDownIcon, HighlighterIcon, ImageIcon, ItalicIcon, Link2Icon, LinkIcon, ListCollapseIcon, ListIcon, ListOrderedIcon, ListTodoIcon, LucideIcon, MessageSquareIcon, MinusIcon, PlusIcon, PrinterIcon, Redo2Icon, RedoIcon, RemoveFormattingIcon, SearchIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon, UploadIcon, TableIcon, Trash2Icon, Sigma, Baseline, Code2Icon, HeadingIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { type Level } from "@tiptap/extension-heading"
 import { type ColorResult, SketchPicker } from "react-color"
@@ -13,12 +13,24 @@ import { Button } from "@/components/ui/button";
 import { DialogFooter, DialogHeader, DialogContent, DialogTitle, Dialog } from "@/components/ui/dialog";
 import { MathInputDialog } from '@/components/math-input-dialog'
 import { Label } from "@/components/ui/label";
+import { de } from "date-fns/locale";
 
 const TableButton = () => {
     const { editor } = useEditorStore();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [rows, setRows] = useState(3);
     const [cols, setCols] = useState(3);
+    const [menuPlacement, setMenuPlacement] = useState<"bottom" | "right">("bottom");
+
+    useEffect(() => {
+        const handleResize = () => {
+            setMenuPlacement(window.innerWidth < 768 ? "right" : "bottom");
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     if (!editor) return null;
 
@@ -27,7 +39,7 @@ const TableButton = () => {
             editor.chain().focus().insertTable({
                 rows,
                 cols,
-                withHeaderRow: true  // 添加表头行
+                withHeaderRow: true
             }).run();
             setIsDialogOpen(false);
         },
@@ -42,7 +54,6 @@ const TableButton = () => {
         splitCell: () => editor.chain().focus().splitCell().run(),
         toggleHeaderColumn: () => editor.chain().focus().toggleHeaderColumn().run(),
         toggleHeaderRow: () => editor.chain().focus().toggleHeaderRow().run(),
-        toggleHeaderCell: () => editor.chain().focus().toggleHeaderCell().run(),
     };
 
     return (
@@ -53,7 +64,7 @@ const TableButton = () => {
                         <TableIcon className="size-4" />
                     </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent side={menuPlacement} align="start">
                     <DropdownMenuItem onClick={() => setIsDialogOpen(true)}>
                         <PlusIcon className="size-4 mr-2" />
                         <span>插入表格</span>
@@ -198,10 +209,210 @@ const LineHeightButton = () => {
     )
 }
 
-const FontSizeButton = () => {
+interface ToolbarButtonBaseProps {
+    isVertical?: boolean;
+}
+
+const HeadingLevelButton = ({ isVertical }: ToolbarButtonBaseProps) => {
     const { editor } = useEditorStore();
-    const [customSize, setCustomSize] = useState("");
+
+    const HEADINGS = [
+        { label: "正文", value: 0, fontSize: "16px", style: "font-normal" },
+        { label: "标题 1", value: 1, fontSize: "32px", style: "font-bold" },
+        { label: "标题 2", value: 2, fontSize: "24px", style: "font-bold" },
+        { label: "标题 3", value: 3, fontSize: "20px", style: "font-bold" },
+        { label: "标题 4", value: 4, fontSize: "18px", style: "font-bold" },
+        { label: "标题 5", value: 5, fontSize: "16px", style: "font-bold" },
+        { label: "标题 6", value: 6, fontSize: "14px", style: "font-bold" },
+    ]
+
+    const getCurrentHeading = () => {
+        for (let level = 1; level <= 6; level++) {
+            if (editor?.isActive("heading", { level })) {
+                return HEADINGS.find(h => h.value === level)?.label || "正文"
+            }
+        }
+        return "正文"
+    };
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button className={cn(
+                    "h-7 shrink-0 flex items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm",
+                    isVertical ? "min-w-7" : "w-[120px]"
+                )}>
+                    {isVertical ? (
+                        <HeadingIcon className="size-4" />
+                    ) : (
+                        <>
+                            <span className="truncate">{getCurrentHeading()}</span>
+                            <ChevronDownIcon className="ml-2 size-4 shrink-0" />
+                        </>
+                    )}
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="p-1 flex flex-col gap-y-1">
+                {HEADINGS.map(({ label, value, fontSize, style }) => (
+                    <button
+                        key={value}
+                        onClick={() => editor?.chain().focus().toggleHeading({ level: value as Level }).run()}
+                        className={cn(
+                            "flex items-center gap-x-2 px-2 py-1 rounded-sm hover:bg-neutral-200/80",
+                            editor?.isActive("heading", { level: value }) && "bg-neutral-200/80"
+                        )}
+                    >
+                        <span className={cn("text-sm", style)} style={{ fontSize }}>{label}</span>
+                    </button>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+};
+
+const FontFamilyButton = ({ isVertical }: ToolbarButtonBaseProps) => {
+    const { editor } = useEditorStore();
+    const [search, setSearch] = useState("");
+    const [recentFonts, setRecentFonts] = useState<string[]>([]);
+    const [menuPlacement, setMenuPlacement] = useState<"bottom" | "right">("bottom");
+
+    const FONT_FAMILIES = [
+        { label: "Arial", value: "Arial" },
+        { label: "Times New Roman", value: "Times New Roman" },
+        { label: "Courier New", value: "Courier New" },
+        { label: "Verdana", value: "Verdana" },
+        { label: "Georgia", value: "Georgia" },
+        { label: "Comic Sans MS", value: "Comic Sans MS" },
+        { label: "Impact", value: "Impact" },
+        { label: "Lucida Console", value: "Lucida Console" },
+        { label: "Tahoma", value: "Tahoma" },
+        { label: "Trebuchet MS", value: "Trebuchet MS" },
+        { label: "Arial Black", value: "Arial Black" },
+        { label: "Palatino Linotype", value: "Palatino Linotype" },
+        { label: "Lucida Sans Unicode", value: "Lucida Sans Unicode" },
+        { label: "MS Sans Serif", value: "MS Sans Serif" },
+        { label: "Courier", value: "Courier" },
+        { label: "Lucida Grande", value: "Lucida Grande" },
+        { label: "Bookman", value: "Bookman" },
+        { label: "Garamond", value: "Garamond" },
+        { label: "Candara", value: "Candara" },
+        { label: "Calibri", value: "Calibri" },
+    ];
+
+    const filteredFonts = FONT_FAMILIES.filter(font =>
+        font.label.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const handleFontSelect = (font: string) => {
+        editor?.chain().focus().setFontFamily(font).run();
+        setRecentFonts(prev => [font, ...prev.filter(f => f !== font)].slice(0, 5));
+    };
+
+    const currentFont = editor?.getAttributes("textStyle").fontFamily || "Arial";
+
+    useEffect(() => {
+        const handleResize = () => {
+            setMenuPlacement(window.innerWidth < 768 ? "right" : "bottom");
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button className={cn(
+                    "h-7 shrink-0 flex items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm",
+                    isVertical ? "min-w-7" : "w-[120px]"
+                )}>
+                    {isVertical ? (
+                        <span className="font-serif text-lg">A</span>
+                    ) : (
+                        <>
+                            <span className="truncate">{currentFont}</span>
+                            <ChevronDownIcon className="ml-2 size-4 shrink-0" />
+                        </>
+                    )}
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side={menuPlacement} align="start">
+                <div className="max-h-[300px] overflow-y-auto custom-scrollbar p-1">
+                    {/* 搜索框 */}
+                    <Input
+                        placeholder="Search fonts..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="mb-2"
+                    />
+
+                    {/* 最近使用的字体 */}
+                    {recentFonts.length > 0 && (
+                        <div className="mb-2">
+                            <div className="text-xs text-gray-500 mb-1">最近使用</div>
+                            <div className="grid grid-cols-2 gap-1">
+                                {recentFonts.map((font) => (
+                                    <button
+                                        key={font}
+                                        onClick={() => handleFontSelect(font)}
+                                        className={cn(
+                                            "flex items-center justify-center px-2 py-1 rounded-sm hover:bg-neutral-200/80",
+                                            currentFont === font && "bg-neutral-200/80"
+                                        )}
+                                    >
+                                        <span className="text-sm" style={{ fontFamily: font }}>{font}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 字体列表 */}
+                    <div className="grid grid-cols-2 gap-1">
+                        {filteredFonts.map(({ label, value }) => (
+                            <button
+                                key={value}
+                                onClick={() => handleFontSelect(value)}
+                                className={cn(
+                                    "flex items-center justify-center px-2 py-1 rounded-sm hover:bg-neutral-200/80",
+                                    currentFont === value && "bg-neutral-200/80"
+                                )}
+                            >
+                                <span className="text-sm" style={{ fontFamily: value }}>{label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+};
+
+const FontSizeButton = ({ isVertical }: ToolbarButtonBaseProps) => {
+    const { editor } = useEditorStore();
     const [isCustomizing, setIsCustomizing] = useState(false);
+    const [customSize, setCustomSize] = useState("");
+    const [menuPlacement, setMenuPlacement] = useState<"bottom" | "right">("bottom");
+
+    const FONT_SIZES = [
+        { label: "8px", value: "8px" },
+        { label: "9px", value: "9px" },
+        { label: "10px", value: "10px" },
+        { label: "11px", value: "11px" },
+        { label: "12px", value: "12px" },
+        { label: "14px", value: "14px" },
+        { label: "16px", value: "16px" },
+        { label: "18px", value: "18px" },
+        { label: "20px", value: "20px" },
+        { label: "24px", value: "24px" },
+        { label: "28px", value: "28px" },
+        { label: "32px", value: "32px" },
+        { label: "36px", value: "36px" },
+        { label: "48px", value: "48px" },
+        { label: "60px", value: "60px" },
+        { label: "72px", value: "72px" },
+    ];
 
     const currentFontSize = editor?.getAttributes("textStyle").fontSize || "16px";
     const currentSizeLabel = FONT_SIZES.find(size => size.value === currentFontSize)?.label ||
@@ -243,15 +454,37 @@ const FontSizeButton = () => {
         return !isNaN(size) ? `${size}px` : "16px";
     };
 
+    useEffect(() => {
+        const handleResize = () => {
+            setMenuPlacement(window.innerWidth < 768 ? "right" : "bottom");
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button className="h-7 w-[80px] shrink-0 flex items-center justify-between rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm">
-                    <span className="truncate">{getDisplayLabel()}</span>
-                    <ChevronDownIcon className="ml-2 size-4 shrink-0" />
+                <button className={cn(
+                    "h-7 shrink-0 flex items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm",
+                    isVertical ? "min-w-7" : "w-[80px]"
+                )}>
+                    {isVertical ? (
+                        <div className="flex items-baseline">
+                            <span className="text-xs">A</span>
+                            <span className="text-base ml-0.5">A</span>
+                        </div>
+                    ) : (
+                        <>
+                            <span className="truncate">{getDisplayLabel()}</span>
+                            <ChevronDownIcon className="ml-2 size-4 shrink-0" />
+                        </>
+                    )}
                 </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48">
+            <DropdownMenuContent side={menuPlacement} align="start">
                 <div className="max-h-[300px] overflow-y-auto custom-scrollbar p-1">
                     {/* 预设字号 */}
                     {FONT_SIZES.map((size) => (
@@ -397,6 +630,7 @@ const ImageButton = () => {
     const { editor } = useEditorStore();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [imageUrl, setImageUrl] = useState("");
+    const [menuPlacement, setMenuPlacement] = useState<"bottom" | "right">("bottom");
 
     const onChange = (url: string) => {
         editor?.chain().focus().setImage({ src: url }).run();
@@ -450,6 +684,16 @@ const ImageButton = () => {
         }
     }
 
+    useEffect(() => {
+        const handleResize = () => {
+            setMenuPlacement(window.innerWidth < 768 ? "right" : "bottom");
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
         <>
             <DropdownMenu>
@@ -458,7 +702,7 @@ const ImageButton = () => {
                         <ImageIcon className="size-4" />
                     </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent side={menuPlacement} align="start">
                     <DropdownMenuItem onClick={onUpload}>
                         <UploadIcon className="size-4 mr-2" />
                         <span>Upload</span>
@@ -774,233 +1018,6 @@ const HighlightColorButton = () => {
     );
 };
 
-const HeadingLevelButton = () => {
-    const { editor } = useEditorStore();
-    const headings = [
-        { label: "正文", value: 0, fontSize: "16px", style: "font-normal" },
-        { label: "标题 1", value: 1, fontSize: "32px", style: "font-bold" },
-        { label: "标题 2", value: 2, fontSize: "24px", style: "font-bold" },
-        { label: "标题 3", value: 3, fontSize: "20px", style: "font-bold" },
-        { label: "标题 4", value: 4, fontSize: "18px", style: "font-bold" },
-        { label: "标题 5", value: 5, fontSize: "16px", style: "font-bold" },
-        { label: "标题 6", value: 6, fontSize: "14px", style: "font-bold" },
-    ]
-
-    const getCurrentHeading = () => {
-        for (let level = 1; level <= 6; level++) {
-            if (editor?.isActive("heading", { level })) {
-                return headings.find(h => h.value === level)?.label || "正文"
-            }
-        }
-        return "正文"
-    };
-
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <button className="h-7 w-[120px] shrink-0 flex items-center justify-between rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm">
-                    <span className="truncate">
-                        {getCurrentHeading()}
-                    </span>
-                    <ChevronDownIcon className="ml-2 size-4 shrink-0" />
-                </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[240px]">
-                <div className="p-1 flex flex-col gap-y-1">
-                    {headings.map(({ label, value, fontSize, style }) => (
-                        <button
-                            key={value}
-                            className={cn(
-                                "flex flex-col gap-y-0.5 px-3 py-2 rounded-sm hover:bg-neutral-200/80",
-                                (value === 0 && !editor?.isActive("heading")) ||
-                                editor?.isActive("heading", { level: value }) && "bg-neutral-200/80"
-                            )}
-                            onClick={() => {
-                                if (value === 0) {
-                                    editor?.chain().focus().setParagraph().run();
-                                } else {
-                                    editor?.chain().focus().toggleHeading({ level: value as Level }).run();
-                                }
-                            }}
-                        >
-                            {/* 标题预览 */}
-                            <div
-                                className="text-left w-full truncate"
-                                style={{
-                                    fontSize,
-                                    fontWeight: style.includes('bold') ? 'bold' : 'normal',
-                                    lineHeight: '1.2',
-                                    color: value === 0 ? '#666' : '#000'
-                                }}
-                            >
-                                {label}
-                            </div>
-                            {/* 标题说明 */}
-                            <div className="text-xs text-gray-500">
-                                {value === 0 ?
-                                    "正文文本" :
-                                    `标题 ${value} (${fontSize})`
-                                }
-                            </div>
-                        </button>
-                    ))}
-                </div>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    )
-}
-
-// 字体配置
-const FONT_FAMILIES = [
-    { label: "微软雅黑", value: "'Microsoft YaHei', 'PingFang SC', sans-serif" },
-    { label: "宋体", value: "'SimSun', serif" },
-    { label: "黑体", value: "'SimHei', sans-serif" },
-    { label: "楷体", value: "'KaiTi', serif" },
-    { label: "仿宋", value: "'FangSong', serif" },
-    { label: "思源黑体", value: "'Source Han Sans SC', 'Noto Sans SC', sans-serif" },
-    { label: "思源宋体", value: "'Source Han Serif SC', 'Noto Serif SC', serif" },
-    { label: "苹方", value: "'PingFang SC', 'Microsoft YaHei', sans-serif" },
-    { label: "华文黑体", value: "'STHeiti', sans-serif" },
-    { label: "华文楷体", value: "'STKaiti', serif" },
-    { label: "华文宋体", value: "'STSong', serif" },
-    { label: "华文仿宋", value: "'STFangsong', serif" },
-    { label: "华文中宋", value: "'STZhongsong', serif" },
-    { label: "华文琥珀", value: "'STHupo', sans-serif" },
-    { label: "华文新魏", value: "'STXinwei', serif" },
-    { label: "华文隶书", value: "'STLiti', serif" },
-    { label: "冬青黑体", value: "'Hiragino Sans GB', sans-serif" },
-    { label: "兰亭黑", value: "'Lantinghei SC', sans-serif" },
-    { label: "翩翩体", value: "'Hanzipen SC', cursive" },
-    { label: "手札体", value: "'Hannotate SC', cursive" },
-    { label: "娃娃体", value: "'Wawati SC', cursive" },
-    { label: "圆体", value: "'Yuanti SC', sans-serif" },
-    { label: "Arial", value: "Arial, sans-serif" },
-    { label: "Times New Roman", value: "'Times New Roman', serif" },
-    { label: "Helvetica", value: "'Helvetica Neue', Helvetica, Arial, sans-serif" },
-    { label: "Georgia", value: "Georgia, serif" },
-    { label: "Verdana", value: "Verdana, sans-serif" },
-    { label: "Tahoma", value: "Tahoma, sans-serif" },
-    { label: "Calibri", value: "Calibri, sans-serif" },
-    { label: "Segoe UI", value: "'Segoe UI', sans-serif" },
-];
-
-// 字号配置
-const FONT_SIZES = [
-    { label: "初号", value: "42px" },
-    { label: "小初", value: "36px" },
-    { label: "一号", value: "26px" },
-    { label: "小一", value: "24px" },
-    { label: "二号", value: "22px" },
-    { label: "小二", value: "18px" },
-    { label: "三号", value: "16px" },
-    { label: "小三", value: "15px" },
-    { label: "四号", value: "14px" },
-    { label: "小四", value: "12px" },
-    { label: "五号", value: "10.5px" },
-    { label: "小五", value: "9px" },
-];
-
-const FontFamilyButton = () => {
-    const { editor } = useEditorStore();
-    const [searchQuery, setSearchQuery] = useState("");
-    const [recentFonts, setRecentFonts] = useState<typeof FONT_FAMILIES[0][]>([]);
-
-    const handleFontSelect = (font: typeof FONT_FAMILIES[0]) => {
-        editor?.chain().focus().setFontFamily(font.value).run();
-        setRecentFonts(prev => {
-            const newFonts = [font, ...prev.filter(f => f.value !== font.value)].slice(0, 5);
-            try {
-                localStorage.setItem('recentFonts', JSON.stringify(newFonts));
-            } catch (e) {
-                console.error('Failed to save recent fonts');
-            }
-            return newFonts;
-        });
-    };
-
-    useEffect(() => {
-        try {
-            const saved = localStorage.getItem('recentFonts');
-            if (saved) {
-                setRecentFonts(JSON.parse(saved));
-            }
-        } catch (e) {
-            console.error('Failed to load recent fonts');
-        }
-    }, []);
-
-    const filteredFonts = FONT_FAMILIES.filter(font =>
-        font.label.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <button className="h-7 w-[120px] shrink-0 flex items-center justify-between rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm">
-                    <span className="truncate">
-                        {FONT_FAMILIES.find(font =>
-                            editor?.getAttributes("textStyle").fontFamily === font.value
-                        )?.label || "默认字体"}
-                    </span>
-                    <ChevronDownIcon className="ml-2 size-4 shrink-0" />
-                </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64">
-                <div className="p-2 border-b">
-                    <Input
-                        placeholder="搜索字体..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="h-8"
-                    />
-                </div>
-
-                <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
-                    {/* 最近使用的字体 */}
-                    {recentFonts.length > 0 && (
-                        <>
-                            <div className="px-1 py-1.5">
-                                <div className="px-2 py-1.5 text-xs text-gray-500">最近使用</div>
-                                {recentFonts.map((font) => (
-                                    <button
-                                        key={font.value}
-                                        onClick={() => handleFontSelect(font)}
-                                        className={cn(
-                                            "w-full flex items-center px-2 py-1.5 rounded-sm hover:bg-neutral-200/80",
-                                            editor?.getAttributes("textStyle").fontFamily === font.value && "bg-neutral-200/80"
-                                        )}
-                                        style={{ fontFamily: font.value }}
-                                    >
-                                        <span className="text-sm">{font.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                            <Separator className="my-1" />
-                        </>
-                    )}
-
-                    {/* 所有字体 */}
-                    <div className="px-1 py-1.5">
-                        {filteredFonts.map((font) => (
-                            <button
-                                key={font.value}
-                                onClick={() => handleFontSelect(font)}
-                                className={cn(
-                                    "w-full flex items-center px-2 py-1.5 rounded-sm hover:bg-neutral-200/80",
-                                    editor?.getAttributes("textStyle").fontFamily === font.value && "bg-neutral-200/80"
-                                )}
-                                style={{ fontFamily: font.value }}
-                            >
-                                <span className="text-sm">{font.label}</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    );
-};
-
 interface ToolbarButtonProps {
     onClick: () => void;
     isActive?: boolean;
@@ -1108,8 +1125,29 @@ const CodeButton = () => {
     );
 };
 
-export const Toolbar = () => {
+interface ToolbarProps {
+    defaultVertical?: boolean;
+}
+
+export const Toolbar = ({ defaultVertical = false }: ToolbarProps) => {
     const { editor } = useEditorStore()
+    const [isVertical, setIsVertical] = useState(defaultVertical);
+
+    useEffect(() => {
+        const handleResize = () => {
+            // 如果是默认纵向，则始终保持纵向
+            if (defaultVertical) {
+                setIsVertical(true);
+            } else {
+                setIsVertical(window.innerWidth < 768);
+            }
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [defaultVertical]);
+
     const sections: {
         label: string;
         icon: LucideIcon;
@@ -1187,54 +1225,88 @@ export const Toolbar = () => {
             "dark:bg-gray-800 dark:border-gray-700"
         )}>
             <div className={cn(
-                "bg-[#F1F4F9] dark:bg-gray-900",
-                "px-2 py-0.5",
-                "min-h-[40px] flex items-center justify-center",
-                "flex-wrap",
-                "overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent",
-                "py-1",
-                "max-w-[1000px] w-full"
+                "transition-all duration-300",
+                isVertical ? [
+                    "fixed right-4 top-1/2 -translate-y-1/2 z-50",
+                    "flex flex-col gap-y-1 p-2 rounded-lg shadow-lg",
+                    "max-h-[90vh] overflow-y-auto",
+                    "bg-[#F1F4F9]/10 backdrop-blur-sm dark:bg-gray-900/90"
+                ] : [
+                    "bg-[#F1F4F9] dark:bg-gray-900",
+                    "px-2 py-0.5",
+                    "min-h-[40px] flex items-center justify-center",
+                    "flex-wrap",
+                    "max-w-[1000px] w-full"
+                ]
             )}>
-                <div className="flex items-center gap-x-0.5 flex-shrink-0">
-                    {sections[0].slice(0, 2).map((item) => (
-                        <ToolbarButton
-                            key={item.label}
-                            onClick={item.onClick}
-                            icon={item.icon}
-                        />
-                    ))}
-                    <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-                    <HeadingLevelButton />
-                    <FontFamilyButton />
-                    <FontSizeButton />
-                    {sections[1].map((item) => (
-                        <ToolbarButton
-                            key={item.label}
-                            onClick={item.onClick}
-                            icon={item.icon}
-                        />
-                    ))}
-                </div>
+                {/* 工具栏分组 */}
+                <div className={cn(
+                    "flex gap-0.5",
+                    isVertical ? "flex-col" : "items-center flex-shrink-0"
+                )}>
+                    {/* 基础工具组 */}
+                    <div className={cn(
+                        "flex gap-0.5",
+                        isVertical ? "flex-col" : "items-center"
+                    )}>
+                        <HeadingLevelButton isVertical={isVertical} />
+                        <FontFamilyButton isVertical={isVertical} />
+                        <FontSizeButton isVertical={isVertical} />
+                        {sections[1].map((item) => (
+                            <ToolbarButton
+                                key={item.label}
+                                onClick={item.onClick}
+                                icon={item.icon}
+                            />
+                        ))}
+                    </div>
 
-                <div className="flex items-center gap-x-0.5 flex-wrap">
-                    <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-                    <TextColorButton />
-                    <HighlightColorButton />
-                    <LinkButton />
-                    <ImageButton />
-                    <TableButton />
-                    <AlignButton />
-                    <LineHeightButton />
-                    <ListButton />
-                    <MathButton />
-                    <CodeButton />
-                    {sections[2].map((item) => (
-                        <ToolbarButton
-                            key={item.label}
-                            onClick={item.onClick}
-                            icon={item.icon}
-                        />
-                    ))}
+                    {/* 分隔线 */}
+                    <Separator
+                        className={cn(
+                            "bg-neutral-300",
+                            isVertical ? "h-px w-full my-1" : "w-px h-6"
+                        )}
+                    />
+
+                    {/* 格式工具组 */}
+                    <div className={cn(
+                        "flex gap-0.5",
+                        isVertical ? "flex-col" : "items-center"
+                    )}>
+                        <TextColorButton />
+                        <HighlightColorButton />
+                        <LinkButton />
+                        <ImageButton />
+                        <TableButton />
+                        <AlignButton />
+                        <LineHeightButton />
+                        <ListButton />
+                        <MathButton />
+                        <CodeButton />
+                    </div>
+
+                    {/* 分隔线 */}
+                    <Separator
+                        className={cn(
+                            "bg-neutral-300",
+                            isVertical ? "h-px w-full my-1" : "w-px h-6"
+                        )}
+                    />
+
+                    {/* 其他工具组 */}
+                    <div className={cn(
+                        "flex gap-0.5",
+                        isVertical ? "flex-col" : "items-center"
+                    )}>
+                        {sections[2].map((item) => (
+                            <ToolbarButton
+                                key={item.label}
+                                onClick={item.onClick}
+                                icon={item.icon}
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
