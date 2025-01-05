@@ -3,7 +3,7 @@
 import { useEditorStore } from "@/hooks/use-editor-store";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon, BoldIcon, ChevronDownIcon, HighlighterIcon, ImageIcon, ItalicIcon, Link2Icon, LinkIcon, ListCollapseIcon, ListIcon, ListOrderedIcon, ListTodoIcon, LucideIcon, MessageSquareIcon, MinusIcon, PlusIcon, PrinterIcon, Redo2Icon, RedoIcon, RemoveFormattingIcon, SearchIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon, UploadIcon, TableIcon, Trash2Icon, Sigma, Baseline } from "lucide-react";
+import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon, BoldIcon, ChevronDownIcon, HighlighterIcon, ImageIcon, ItalicIcon, Link2Icon, LinkIcon, ListCollapseIcon, ListIcon, ListOrderedIcon, ListTodoIcon, LucideIcon, MessageSquareIcon, MinusIcon, PlusIcon, PrinterIcon, Redo2Icon, RedoIcon, RemoveFormattingIcon, SearchIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon, UploadIcon, TableIcon, Trash2Icon, Sigma, Baseline, Code2Icon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { type Level } from "@tiptap/extension-heading"
 import { type ColorResult, SketchPicker } from "react-color"
@@ -1074,6 +1074,40 @@ const MathButton = () => {
     )
 }
 
+const CodeButton = () => {
+    const { editor } = useEditorStore();
+    if (!editor) return null;
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button
+                    className={cn(
+                        "h-7 min-w-7 flex items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 text-sm",
+                        (editor.isActive('code') || editor.isActive('codeBlock')) && "active"
+                    )}
+                >
+                    <Code2Icon className="size-4" />
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuItem
+                    onClick={() => editor.chain().focus().toggleCode().run()}
+                    className={cn(editor.isActive('code') && "bg-accent")}
+                >
+                    <span>行内代码</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                    className={cn(editor.isActive('codeBlock') && "bg-accent")}
+                >
+                    <span>代码块</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+};
+
 export const Toolbar = () => {
     const { editor } = useEditorStore()
     const sections: {
@@ -1193,6 +1227,7 @@ export const Toolbar = () => {
                     <LineHeightButton />
                     <ListButton />
                     <MathButton />
+                    <CodeButton />
                     {sections[2].map((item) => (
                         <ToolbarButton
                             key={item.label}
