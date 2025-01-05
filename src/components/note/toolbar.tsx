@@ -764,6 +764,10 @@ const HighlightColorButton = () => {
             buttonContent={
                 <div className="relative">
                     <HighlighterIcon style={{ color: currentColor === "transparent" ? "#000" : currentColor }} className="size-4" />
+                    {/* <div
+                        className="absolute bottom-0 left-0 right-0 h-0.5"
+
+                    /> */}
                 </div>
             }
         />

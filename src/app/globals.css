@@ -58,7 +58,7 @@
   width: 100%;
   color: rgb(55, 65, 81);
   font-size: 16px;
-  line-height: 1.75;
+  /* line-height: 1.75; */
 
   /* Base Typography */
   p,
@@ -152,13 +152,16 @@
     padding: 0;
 
     li {
-      align-items: center;
+      align-items: flex-start;
       display: flex;
+      margin-top: -1.5rem;      /* 添加列表项之间的小间距 */
+      margin-bottom: -1.5rem;
 
       >label {
         flex: 0 0 auto;
         margin-right: 0.5rem;
         user-select: none;
+        padding-top: 1rem;
       }
 
       >div {
@@ -170,18 +173,19 @@
       cursor: pointer;
     }
 
+    /* 嵌套的任务列表 */
     ul[data-type="taskList"] {
-      margin: 0;
+      margin: 0.5rem 0 1.5rem 0.5rem;
     }
   }
 
   /* Links */
   a {
-    color: #2563eb;
+    color: blue;
     text-decoration: underline;
 
     &:hover {
-      color: #1d4ed8;
+      color: blue;
     }
   }
 
@@ -404,6 +408,7 @@
   .math-node {
     font-family: KaTeX_Main, 'Times New Roman', serif;
     min-width: 1em;
+    color: blue;
   }
 
   /* 行内公式样式 */
@@ -445,7 +450,7 @@
   .math-node.math-display {
     display: block;
     text-align: center;
-    margin: 0;
+    margin: 1em 0;
     padding: 0;
   }
 
@@ -498,7 +503,7 @@
   }
 
   .math-display-wrapper::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.1);
+    background: transparent;
     border-radius: 4px;
   }
 
@@ -522,6 +527,7 @@
   overflow-y: hidden;
   max-width: 100%;
   padding: 0.5rem 0;
+  color: blue;
 
   /* 滚动条样式 */
   &::-webkit-scrollbar {
@@ -620,7 +626,7 @@
   width: 16px;
   /* 统一图标大小 */
   height: 16px;
-  stroke-width: 2px;
+  stroke-width: 1px;
   /* 统一线条粗细 */
 }
 
